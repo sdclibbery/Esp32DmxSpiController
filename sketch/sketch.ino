@@ -3,8 +3,8 @@
 #include <FastLED.h>
 
 /* TODO
- Get it to compile
  First actual mode
+ Consider rewriting Serial handling: https://gemini.google.com/app/9bacdb891b977834 (but Geminis code is all over the place, inc setTimeout taking MILLIs)
  DMX base channel
 */
 
