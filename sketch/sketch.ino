@@ -3,10 +3,8 @@
 #include <NeoPixelBus.h>
 
 /* TODO
- First actual mode: 0: Solid: Blend entire strip between back and fore based on control, smoothing does nothing
-  0: Solid: Blend entire strip through the palette based on control, smoothing does nothing
-  4 palettes from mode
-  function for actual mode; pass palette fn in as fn ptr
+ Second mode
+ Try DMX
  Consider rewriting Serial handling: https://gemini.google.com/app/9bacdb891b977834 (but Geminis code is all over the place, inc setTimeout taking MILLIs)
  DMX base channel
 */
@@ -43,7 +41,7 @@ uint8_t dmxData[DMX_CHANNELS] = {0};
 const uint16_t pixelCount = 4;
 typedef NeoPixelBus<NeoGrbFeature, NeoEsp32I2s1X8Ws2812xMethod> PixelStrip;
 // typedef NeoPixelBus<NeoGrbwFeature, NeoEsp32I2s1X8Sk6812Method> PixelStrip;
-PixelStrip strip1(pixelCount, DATA0);
+PixelStrip strip1(pixelCount, DATA2);
 
 struct FixtureData {
   uint8_t mode;
@@ -58,40 +56,65 @@ void setup() {
   while (!Serial); // wait for serial attach
   Serial.println("Setup starting.");
 
-  dmxSerial.begin(250000, SERIAL_8N2, DMX_RX_PIN, DMX_TX_PIN);
-  dmx.begin(dmxSerial, DMX_EN_PIN, 512); 
-  dmx.setComDir(DMX_READ_DIR);
+  // dmxSerial.begin(250000, SERIAL_8N2, DMX_RX_PIN, DMX_TX_PIN);
+  // dmx.begin(dmxSerial, DMX_EN_PIN, 512); 
+  // dmx.setComDir(DMX_READ_DIR);
 
   strip1.Begin(); strip1.Show(); // Clear strip
 
   Serial.println("Setup complete.");
 }
 
-RgbColor paletteBF(const RgbColor& back, const RgbColor& fore, float lerp) {
-  return RgbColor::LinearBlend(back, fore, lerp);
+RgbColor palette3Way(const RgbColor& a, const RgbColor& b, const RgbColor& c, float lerp) {
+  if (lerp < 0.5) {
+    return RgbColor::LinearBlend(a, b, lerp*2.0f);
+  } else {
+    return RgbColor::LinearBlend(b, c, (lerp-0.5f)*2.0f);
+  }
+}
+
+const RgbColor off = RgbColor(0,0,0);
+RgbColor palette(uint8_t type, const RgbColor& back, const RgbColor& fore, float lerp) {
+  switch (type) {
+    case 0: return RgbColor::LinearBlend(back, fore, lerp);
+    case 1: return palette3Way(off, back, fore, lerp);
+    case 2: return palette3Way(back, fore, off, lerp);
+    case 3: return palette3Way(back, off, fore, lerp);
+  }
+  return off;
 }
 
 void modeSolid(const FixtureData& data, PixelStrip& strip) {
+  uint8_t paletteType = data.mode%4;
   for (uint16_t i=0; i<strip.PixelCount(); i++ ) {
-    strip.SetPixelColor(i, paletteBF(data.back, data.fore, data.control));
+    strip.SetPixelColor(i, palette(paletteType, data.back, data.fore, data.control));
+  }
+}
+
+void updateStrip(const FixtureData& data, PixelStrip& strip) {
+  uint8_t mode = data.mode/4;
+  switch (mode) {
+    case 0: modeSolid(data, strip); break;
   }
 }
 
 uint8_t t = 0;
+uint8_t m = 0;
 void loop() {
-  delay(100);
+  if (t==0) { m++; Serial.println("update t=0"); }
+  delay(10);
 
-  while(dmx.dataAvailable() == false) {
-      dmx.update();
-  }
-  dmx.readBytes(dmxData, DMX_CHANNELS, dmxStartChannel);
+  // while(dmx.dataAvailable() == false) {
+  //     dmx.update();
+  // }
+  // dmx.readBytes(dmxData, DMX_CHANNELS, dmxStartChannel);
   FixtureData fixtureData;
-  fixtureData.mode = dmxData[DMX_MODE];
-  fixtureData.control = ((float)dmxData[DMX_CONTROL])/255;
-  fixtureData.smooth = ((float)dmxData[DMX_SMOOTH])/255;
-  fixtureData.fore = RgbColor(dmxData[DMX_FORE_R],dmxData[DMX_FORE_G],dmxData[DMX_FORE_B]);
-  fixtureData.back = RgbColor(dmxData[DMX_BACK_R],dmxData[DMX_BACK_G],dmxData[DMX_BACK_B]);
+  fixtureData.mode = m%4;//dmxData[DMX_MODE];
+  fixtureData.control = ((float)t++)/255;//((float)dmxData[DMX_CONTROL])/255;
+  fixtureData.smooth = 0;//((float)dmxData[DMX_SMOOTH])/255;
+  fixtureData.fore = RgbColor(16,0,16);//RgbColor(dmxData[DMX_FORE_R],dmxData[DMX_FORE_G],dmxData[DMX_FORE_B]);
+  fixtureData.back = RgbColor(0,16,16);//RgbColor(dmxData[DMX_BACK_R],dmxData[DMX_BACK_G],dmxData[DMX_BACK_B]);
 
-  modeSolid(fixtureData, strip1);
+  updateStrip(fixtureData, strip1);
   strip1.Show();
 }
