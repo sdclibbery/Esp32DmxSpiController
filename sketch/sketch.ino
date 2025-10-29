@@ -1,12 +1,16 @@
+#include <cmath>
 #include <Arduino.h>
 #include <SparkFunDMX.h>
 #include <NeoPixelBus.h>
 
 /* TODO
- Second mode
+ ?? Should have a dedicated palette channel, and it should include curves and asymmetric, as well as animated?
  Try DMX
- Consider rewriting Serial handling: https://gemini.google.com/app/9bacdb891b977834 (but Geminis code is all over the place, inc setTimeout taking MILLIs)
+ More modes
  DMX base channel
+ 3 strips
+ Consider rewriting Serial handling: https://gemini.google.com/app/9bacdb891b977834 (but Geminis code is all over the place, inc setTimeout taking MILLIs)
+ DMX pass through
 */
 
 // Hardware Definitions for ESP32 DMX Shield (UART2)
@@ -38,7 +42,7 @@ uint8_t dmxData[DMX_CHANNELS] = {0};
 #define DATA0 19
 #define DATA1 18
 #define DATA2 27 
-const uint16_t pixelCount = 4;
+const uint16_t pixelCount = 8;
 typedef NeoPixelBus<NeoGrbFeature, NeoEsp32I2s1X8Ws2812xMethod> PixelStrip;
 // typedef NeoPixelBus<NeoGrbwFeature, NeoEsp32I2s1X8Sk6812Method> PixelStrip;
 PixelStrip strip1(pixelCount, DATA2);
@@ -50,6 +54,73 @@ struct FixtureData {
   RgbColor fore;
   RgbColor back;
 };
+
+float limit (float x) {
+  if (std::isnan(x)) { return 0.0f; }
+  if (x < 0.0f) { return 0.0f; }
+  if (x > 1.0f) { return 1.0f; }
+  return x;
+}
+
+float powerSmooth (float x, float p) {
+  x = limit(x);
+  p = limit(p);
+  if (p < 0.5f) { return std::pow(x, 1.0f + (0.5f-p)*128.0f); }
+  else { return std::pow(x, 1.0f + (p - 0.5f)*128.0f); }
+}
+
+RgbColor palette3Way(const RgbColor& a, const RgbColor& b, const RgbColor& c, float lerp) {
+  if (lerp < 0.5) {
+    return RgbColor::LinearBlend(a, b, lerp*2.0f);
+  } else {
+    return RgbColor::LinearBlend(b, c, (lerp-0.5f)*2.0f);
+  }
+}
+
+const RgbColor off = RgbColor(0,0,0);
+RgbColor palette(uint8_t type, const RgbColor& back, const RgbColor& fore, float lerp) {
+  lerp = limit(lerp);
+  switch (type) {
+    case 0: return RgbColor::LinearBlend(back, fore, lerp);
+    case 1: return palette3Way(off, back, fore, lerp);
+    case 2: return palette3Way(back, fore, off, lerp);
+    case 3: return palette3Way(back, off, fore, lerp);
+  }
+  return off;
+}
+
+// 0-3: Solid: Blend entire strip through the palette based on control, smoothing does nothing
+void modeSolid(const FixtureData& data, PixelStrip& strip) {
+  uint8_t paletteType = data.mode & 0x03;
+  for (uint16_t i=0; i<strip.PixelCount(); i++ ) {
+    strip.SetPixelColor(i, palette(paletteType, data.back, data.fore, data.control));
+  }
+}
+
+// 4-7: StartGradient: gradient section rises from start of strip, control is length of section, smoothing is lerp size
+void modeStartGradient(const FixtureData& data, PixelStrip& strip) {
+  uint8_t paletteType = data.mode & 0x03;
+  float con = data.control;
+  for (uint16_t i=0; i<strip.PixelCount(); i++ ) {
+    float lerp = (float)i / (float)(strip.PixelCount()-1); // Lerp starts as position along strip
+    if (lerp < con) { lerp = 1.0f; } // Fore section at start of strip
+    else { lerp = 1.0f - (lerp - con)/(1.0f - con); } // Gradient sectioon for rest of strip
+    lerp = limit(lerp);
+    lerp = powerSmooth(lerp, data.smooth);
+    strip.SetPixelColor(i, palette(paletteType, data.back, data.fore, lerp));
+  }
+}
+
+// EndGradient: gradient section falls from end of strip, control is length of section, smoothing is lerp size
+// MidGradient: gradient section expands from centre of strip, control is length of section, smoothing is lerp size
+
+void updateStrip(const FixtureData& data, PixelStrip& strip) {
+  uint8_t mode = data.mode & 0xfc;
+  switch (mode) {
+    case 0: modeSolid(data, strip); break;
+    case 4: modeStartGradient(data, strip); break;
+  }
+}
 
 void setup() {
   Serial.begin(115200);
@@ -65,43 +136,11 @@ void setup() {
   Serial.println("Setup complete.");
 }
 
-RgbColor palette3Way(const RgbColor& a, const RgbColor& b, const RgbColor& c, float lerp) {
-  if (lerp < 0.5) {
-    return RgbColor::LinearBlend(a, b, lerp*2.0f);
-  } else {
-    return RgbColor::LinearBlend(b, c, (lerp-0.5f)*2.0f);
-  }
-}
-
-const RgbColor off = RgbColor(0,0,0);
-RgbColor palette(uint8_t type, const RgbColor& back, const RgbColor& fore, float lerp) {
-  switch (type) {
-    case 0: return RgbColor::LinearBlend(back, fore, lerp);
-    case 1: return palette3Way(off, back, fore, lerp);
-    case 2: return palette3Way(back, fore, off, lerp);
-    case 3: return palette3Way(back, off, fore, lerp);
-  }
-  return off;
-}
-
-void modeSolid(const FixtureData& data, PixelStrip& strip) {
-  uint8_t paletteType = data.mode%4;
-  for (uint16_t i=0; i<strip.PixelCount(); i++ ) {
-    strip.SetPixelColor(i, palette(paletteType, data.back, data.fore, data.control));
-  }
-}
-
-void updateStrip(const FixtureData& data, PixelStrip& strip) {
-  uint8_t mode = data.mode/4;
-  switch (mode) {
-    case 0: modeSolid(data, strip); break;
-  }
-}
-
 uint8_t t = 0;
 uint8_t m = 0;
 void loop() {
-  if (t==0) { m++; Serial.println("update t=0"); }
+  t+=4;
+  if (t==0) { m+= 4; Serial.printf("update t=0 m=%d\n", m); }
   delay(10);
 
   // while(dmx.dataAvailable() == false) {
@@ -109,11 +148,16 @@ void loop() {
   // }
   // dmx.readBytes(dmxData, DMX_CHANNELS, dmxStartChannel);
   FixtureData fixtureData;
-  fixtureData.mode = m%4;//dmxData[DMX_MODE];
-  fixtureData.control = ((float)t++)/255;//((float)dmxData[DMX_CONTROL])/255;
-  fixtureData.smooth = 0;//((float)dmxData[DMX_SMOOTH])/255;
-  fixtureData.fore = RgbColor(16,0,16);//RgbColor(dmxData[DMX_FORE_R],dmxData[DMX_FORE_G],dmxData[DMX_FORE_B]);
-  fixtureData.back = RgbColor(0,16,16);//RgbColor(dmxData[DMX_BACK_R],dmxData[DMX_BACK_G],dmxData[DMX_BACK_B]);
+  // fixtureData.mode = m%8;//dmxData[DMX_MODE];
+  // fixtureData.control = ((float)t++)/255;//((float)dmxData[DMX_CONTROL])/255;
+  // fixtureData.smooth = 0;//((float)dmxData[DMX_SMOOTH])/255;
+  // fixtureData.fore = RgbColor(16,0,16);//RgbColor(dmxData[DMX_FORE_R],dmxData[DMX_FORE_G],dmxData[DMX_FORE_B]);
+  // fixtureData.back = RgbColor(0,16,16);//RgbColor(dmxData[DMX_BACK_R],dmxData[DMX_BACK_G],dmxData[DMX_BACK_B]);
+  fixtureData.mode = 5;
+  fixtureData.control = ((float)t)/255.0f;
+  fixtureData.smooth = ((float)m)/255.0f;
+  fixtureData.fore = RgbColor(16,16,16);
+  fixtureData.back = RgbColor(16,0,0);
 
   updateStrip(fixtureData, strip1);
   strip1.Show();
