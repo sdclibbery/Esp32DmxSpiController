@@ -42,7 +42,7 @@ uint8_t dmxData[DMX_CHANNELS] = {0};
 #define DATA0 19
 #define DATA1 18
 #define DATA2 27 
-const uint16_t pixelCount = 8;
+const uint16_t pixelCount = 16;
 typedef NeoPixelBus<NeoGrbFeature, NeoEsp32I2s1X8Ws2812xMethod> PixelStrip;
 // typedef NeoPixelBus<NeoGrbwFeature, NeoEsp32I2s1X8Sk6812Method> PixelStrip;
 PixelStrip strip1(pixelCount, DATA2);
@@ -97,28 +97,53 @@ void modeSolid(const FixtureData& data, PixelStrip& strip) {
   }
 }
 
+float gradient (float lerp, float con, float smooth) {
+  if (lerp < con) { lerp = 1.0f; } // Solid section
+  else { lerp = 1.0f - (lerp - con)/(1.0f - con); } // Gradient sectioon
+  lerp = limit(lerp);
+  lerp = powerSmooth(lerp, smooth);
+  return lerp;
+}
+
 // 4-7: StartGradient: gradient section rises from start of strip, control is length of section, smoothing is lerp size
 void modeStartGradient(const FixtureData& data, PixelStrip& strip) {
   uint8_t paletteType = data.mode & 0x03;
-  float con = data.control;
   for (uint16_t i=0; i<strip.PixelCount(); i++ ) {
-    float lerp = (float)i / (float)(strip.PixelCount()-1); // Lerp starts as position along strip
-    if (lerp < con) { lerp = 1.0f; } // Fore section at start of strip
-    else { lerp = 1.0f - (lerp - con)/(1.0f - con); } // Gradient sectioon for rest of strip
-    lerp = limit(lerp);
-    lerp = powerSmooth(lerp, data.smooth);
+    float lerp = (float)i / (float)(strip.PixelCount()-1); // Position along strip
+    lerp = gradient(lerp, data.control, data.smooth);
     strip.SetPixelColor(i, palette(paletteType, data.back, data.fore, lerp));
   }
 }
 
-// EndGradient: gradient section falls from end of strip, control is length of section, smoothing is lerp size
-// MidGradient: gradient section expands from centre of strip, control is length of section, smoothing is lerp size
+// 8-11: EndGradient: gradient section falls from end of strip, control is length of section, smoothing is lerp size
+void modeEndGradient(const FixtureData& data, PixelStrip& strip) {
+  uint8_t paletteType = data.mode & 0x03;
+  for (uint16_t i=0; i<strip.PixelCount(); i++ ) {
+    float lerp = (float)i / (float)(strip.PixelCount()-1); // Position along strip
+    lerp = 1.0f - lerp; // Go from end
+    lerp = gradient(lerp, data.control, data.smooth);
+    strip.SetPixelColor(i, palette(paletteType, data.back, data.fore, lerp));
+  }
+}
+
+// 12-15: MidGradient: gradient section expands from centre of strip, control is length of section, smoothing is lerp size
+void modeMidGradient(const FixtureData& data, PixelStrip& strip) {
+  uint8_t paletteType = data.mode & 0x03;
+  for (uint16_t i=0; i<strip.PixelCount(); i++ ) {
+    float lerp = (float)i / (float)(strip.PixelCount()-1); // Position along strip
+    lerp = std::abs(0.5f - lerp)*2.0f; // Go outwards from middle
+    lerp = gradient(lerp, data.control, data.smooth);
+    strip.SetPixelColor(i, palette(paletteType, data.back, data.fore, lerp));
+  }
+}
 
 void updateStrip(const FixtureData& data, PixelStrip& strip) {
   uint8_t mode = data.mode & 0xfc;
   switch (mode) {
     case 0: modeSolid(data, strip); break;
     case 4: modeStartGradient(data, strip); break;
+    case 8: modeEndGradient(data, strip); break;
+    case 12: modeMidGradient(data, strip); break;
   }
 }
 
@@ -156,7 +181,7 @@ void loop() {
   fixtureData.mode = 5;
   fixtureData.control = ((float)t)/255.0f;
   fixtureData.smooth = ((float)m)/255.0f;
-  fixtureData.fore = RgbColor(16,16,16);
+  fixtureData.fore = RgbColor(0,0,16);
   fixtureData.back = RgbColor(16,0,0);
 
   updateStrip(fixtureData, strip1);
