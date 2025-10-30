@@ -65,8 +65,8 @@ float limit (float x) {
 float powerSmooth (float x, float p) {
   x = limit(x);
   p = limit(p);
-  if (p < 0.5f) { return std::pow(x, 1.0f + (0.5f-p)*128.0f); }
-  else { return std::pow(x, 1.0f + (p - 0.5f)*128.0f); }
+  if (p < 0.5f) { return std::pow(x, 1.0f + (0.5f - p)*128.0f); }
+  else { return std::pow(x, 1.0f / (1.0f + (p - 0.5f)*128.0f)); }
 }
 
 RgbColor palette3Way(const RgbColor& a, const RgbColor& b, const RgbColor& c, float lerp) {
@@ -89,14 +89,6 @@ RgbColor palette(uint8_t type, const RgbColor& back, const RgbColor& fore, float
   return off;
 }
 
-// 0-3: Solid: Blend entire strip through the palette based on control, smoothing does nothing
-void modeSolid(const FixtureData& data, PixelStrip& strip) {
-  uint8_t paletteType = data.mode & 0x03;
-  for (uint16_t i=0; i<strip.PixelCount(); i++ ) {
-    strip.SetPixelColor(i, palette(paletteType, data.back, data.fore, data.control));
-  }
-}
-
 float gradient (float lerp, float con, float smooth) {
   if (lerp < con) { lerp = 1.0f; } // Solid section
   else { lerp = 1.0f - (lerp - con)/(1.0f - con); } // Gradient sectioon
@@ -105,8 +97,16 @@ float gradient (float lerp, float con, float smooth) {
   return lerp;
 }
 
-// 4-7: StartGradient: gradient section rises from start of strip, control is length of section, smoothing is lerp size
-void modeStartGradient(const FixtureData& data, PixelStrip& strip) {
+// 0-3: Solid: Blend entire strip through the palette based on control, smoothing does nothing
+void modeSolid(const FixtureData& data, PixelStrip& strip) {
+  uint8_t paletteType = data.mode & 0x03;
+  for (uint16_t i=0; i<strip.PixelCount(); i++ ) {
+    strip.SetPixelColor(i, palette(paletteType, data.back, data.fore, data.control));
+  }
+}
+
+// 12-15: StartBar: solid bar rises from start of strip, control is length of bar, smooth is lerp power in rest of strip
+void modeStartBar(const FixtureData& data, PixelStrip& strip) {
   uint8_t paletteType = data.mode & 0x03;
   for (uint16_t i=0; i<strip.PixelCount(); i++ ) {
     float lerp = (float)i / (float)(strip.PixelCount()-1); // Position along strip
@@ -115,8 +115,8 @@ void modeStartGradient(const FixtureData& data, PixelStrip& strip) {
   }
 }
 
-// 8-11: EndGradient: gradient section falls from end of strip, control is length of section, smoothing is lerp size
-void modeEndGradient(const FixtureData& data, PixelStrip& strip) {
+// 16-19: EndBar: solid bar falls from end of strip, control is length of bar, smooth is lerp power in rest of strip
+void modeEndBar(const FixtureData& data, PixelStrip& strip) {
   uint8_t paletteType = data.mode & 0x03;
   for (uint16_t i=0; i<strip.PixelCount(); i++ ) {
     float lerp = (float)i / (float)(strip.PixelCount()-1); // Position along strip
@@ -126,8 +126,8 @@ void modeEndGradient(const FixtureData& data, PixelStrip& strip) {
   }
 }
 
-// 12-15: MidGradient: gradient section expands from centre of strip, control is length of section, smoothing is lerp size
-void modeMidGradient(const FixtureData& data, PixelStrip& strip) {
+// 20-23: MidBar: solid bar expands from centre of strip, control is length of bar, smooth is lerp power in rest of strip
+void modeMidBar(const FixtureData& data, PixelStrip& strip) {
   uint8_t paletteType = data.mode & 0x03;
   for (uint16_t i=0; i<strip.PixelCount(); i++ ) {
     float lerp = (float)i / (float)(strip.PixelCount()-1); // Position along strip
@@ -141,9 +141,11 @@ void updateStrip(const FixtureData& data, PixelStrip& strip) {
   uint8_t mode = data.mode & 0xfc;
   switch (mode) {
     case 0: modeSolid(data, strip); break;
-    case 4: modeStartGradient(data, strip); break;
-    case 8: modeEndGradient(data, strip); break;
-    case 12: modeMidGradient(data, strip); break;
+    // case 4: modeNoise(data, strip); break;
+    // case 8: modeBlocks(data, strip); break;
+    case 12: modeStartBar(data, strip); break;
+    case 16: modeEndBar(data, strip); break;
+    case 20: modeMidBar(data, strip); break;
   }
 }
 
@@ -152,37 +154,38 @@ void setup() {
   while (!Serial); // wait for serial attach
   Serial.println("Setup starting.");
 
-  // dmxSerial.begin(250000, SERIAL_8N2, DMX_RX_PIN, DMX_TX_PIN);
-  // dmx.begin(dmxSerial, DMX_EN_PIN, 512); 
-  // dmx.setComDir(DMX_READ_DIR);
+  dmxSerial.begin(250000, SERIAL_8N2, DMX_RX_PIN, DMX_TX_PIN);
+  dmx.begin(dmxSerial, DMX_EN_PIN, 512); 
+  dmx.setComDir(DMX_READ_DIR);
 
   strip1.Begin(); strip1.Show(); // Clear strip
 
   Serial.println("Setup complete.");
 }
 
-uint8_t t = 0;
+uint8_t c = 0;
 uint8_t m = 0;
 void loop() {
-  t+=4;
-  if (t==0) { m+= 4; Serial.printf("update t=0 m=%d\n", m); }
+  c+=2;
+  if (c == 0) { m += 8; Serial.printf("update t=0 m=%d\n", m); }
   delay(10);
 
-  // while(dmx.dataAvailable() == false) {
-  //     dmx.update();
-  // }
-  // dmx.readBytes(dmxData, DMX_CHANNELS, dmxStartChannel);
+  while(dmx.dataAvailable() == false) {
+      dmx.update();
+  }
+  dmx.readBytes(dmxData, DMX_CHANNELS, dmxStartChannel);
+Serial.printf("bytes %d %d %d\n", dmxData[DMX_MODE], dmxData[DMX_CONTROL], dmxData[DMX_SMOOTH]);
   FixtureData fixtureData;
-  // fixtureData.mode = m%8;//dmxData[DMX_MODE];
-  // fixtureData.control = ((float)t++)/255;//((float)dmxData[DMX_CONTROL])/255;
-  // fixtureData.smooth = 0;//((float)dmxData[DMX_SMOOTH])/255;
-  // fixtureData.fore = RgbColor(16,0,16);//RgbColor(dmxData[DMX_FORE_R],dmxData[DMX_FORE_G],dmxData[DMX_FORE_B]);
-  // fixtureData.back = RgbColor(0,16,16);//RgbColor(dmxData[DMX_BACK_R],dmxData[DMX_BACK_G],dmxData[DMX_BACK_B]);
-  fixtureData.mode = 5;
-  fixtureData.control = ((float)t)/255.0f;
-  fixtureData.smooth = ((float)m)/255.0f;
-  fixtureData.fore = RgbColor(0,0,16);
-  fixtureData.back = RgbColor(16,0,0);
+  fixtureData.mode = dmxData[DMX_MODE];
+  fixtureData.control = ((float)dmxData[DMX_CONTROL])/255;
+  fixtureData.smooth = ((float)dmxData[DMX_SMOOTH])/255;
+  fixtureData.fore = RgbColor(dmxData[DMX_FORE_R],dmxData[DMX_FORE_G],dmxData[DMX_FORE_B]);
+  fixtureData.back = RgbColor(dmxData[DMX_BACK_R],dmxData[DMX_BACK_G],dmxData[DMX_BACK_B]);
+  // fixtureData.mode = 13;
+  // fixtureData.control = ((float)c)/255.0f;
+  // fixtureData.smooth = ((float)m)/255.0f;
+  // fixtureData.fore = RgbColor(0,0,16);
+  // fixtureData.back = RgbColor(16,0,0);
 
   updateStrip(fixtureData, strip1);
   strip1.Show();
