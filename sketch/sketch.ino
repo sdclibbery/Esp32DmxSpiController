@@ -46,7 +46,13 @@ uint8_t dmxData[DMX_CHANNELS] = {0};
 #define DATA1 18
 #define DATA2 27 
 const uint16_t pixelCount = 16;
-PixelStrip strip1(pixelCount, DATA2);
+typedef NeoPixelBus<NeoGrbFeature, NeoEsp32I2s1X8Ws2812xMethod> NeoPixelStrip;
+// typedef NeoPixelBus<NeoGrbwFeature, NeoEsp32I2s1X8Sk6812Method> NeoPixelStrip;
+
+// Strip 1
+NeoPixelStrip neoStrip1(pixelCount, DATA2);
+void setPixel1 (uint16_t index, Rgb color) { neoStrip1.SetPixelColor(index, RgbColor(color.red, color.green, color.blue)); }
+PixelStrip pixelStrip1(pixelCount, setPixel1);
 
 void setup() {
   Serial.begin(115200);
@@ -57,8 +63,8 @@ void setup() {
 // pinMode(DMX_EN_PIN, OUTPUT);
 // digitalWrite(DMX_EN_PIN, LOW);
 
-  strip1.Begin(); strip1.Show(); // Clear strip
-  // strip1.SetPixelColor(0,RgbColor(0,16,0)); strip1.Show(); // Set first LED green at startup to verify if update is running without Serial monitor
+  neoStrip1.Begin(); neoStrip1.Show(); // Clear strip
+  // neoStrip1.SetPixelColor(0,RgbColor(0,16,0)); neoStrip1.Show(); // Set first LED green at startup to verify if update is running without Serial monitor
 
   Serial.println("Setup complete.");
 }
@@ -116,17 +122,17 @@ void loop() {
   // fixtureData.mode = dmxData[DMX_MODE];
   // fixtureData.control = ((float)dmxData[DMX_CONTROL])/255;
   // fixtureData.smooth = ((float)dmxData[DMX_SMOOTH])/255;
-  // fixtureData.back = RgbColor(dmxData[DMX_BACK_R],dmxData[DMX_BACK_G],dmxData[DMX_BACK_B]);
-  // fixtureData.fore = RgbColor(dmxData[DMX_FORE_R],dmxData[DMX_FORE_G],dmxData[DMX_FORE_B]);
+  // fixtureData.back = Rgb(dmxData[DMX_BACK_R],dmxData[DMX_BACK_G],dmxData[DMX_BACK_B]);
+  // fixtureData.fore = Rgb(dmxData[DMX_FORE_R],dmxData[DMX_FORE_G],dmxData[DMX_FORE_B]);
 
   if (readingC && Serial.available()) { c = Serial.parseInt(); Serial.printf("c: %d\n", c); readingC=false; }
   if (!readingC && Serial.available()) { m = Serial.parseInt(); Serial.printf("m: %d\n", m); readingC=true; }
   fixtureData.mode = 21;
   fixtureData.control = ((float)c)/255.0f;
   fixtureData.smooth = ((float)m)/255.0f;
-  fixtureData.back = RgbColor(16,0,0);
-  fixtureData.fore = RgbColor(0,0,16);
+  fixtureData.back = Rgb(16,0,0);
+  fixtureData.fore = Rgb(0,0,16);
 
-  updateStrip(fixtureData, strip1);
-  strip1.Show();
+  updateStrip(fixtureData, pixelStrip1);
+  neoStrip1.Show();
 }
