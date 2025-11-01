@@ -2,7 +2,8 @@
 ESP32 based DMX controller for SPI LED strips
 
 ## Libraries
-NeoPixelBus, SparkFunDMX
+NeoPixelBus
+Dmx_ESP32 https://github.com/devarishi7/Dmx_ESP32
 
 ## DMX Channel Mapping
 1: Mode

@@ -1,6 +1,7 @@
 #include <cmath>
 #include <Arduino.h>
 #include <NeoPixelBus.h>
+#include <Dmx_ESP32.h>
 #include "modes.h"
 
 /* TODO
@@ -21,6 +22,8 @@
 #define DMX_RX_PIN    16 // UART2 Receive Pin
 #define DMX_TX_PIN    17 // UART2 Transmit Pin
 #define DMX_EN_PIN    21 // Direction Enable Pin (Controls RS-485 transceiver)
+#define LED_GREEN     13
+dmxRx dmxReceive = dmxRx(&Serial1, DMX_RX_PIN, DMX_RX_PIN, DMX_EN_PIN, LED_GREEN, LOW);  // the toggle LED is
 
 // LED setup
 #define CLOCK 5
@@ -58,6 +61,12 @@ void setup() {
   Serial.printf("ESP32 Chip Revision: %d\n", ESP.getChipRevision());
   Serial.printf("ESP32 Arduino core version: %s\n", ESP_ARDUINO_VERSION_STR);
 
+  if (!dmxReceive.configure()) { Serial.println("DMX Configure failed."); }
+  else { Serial.println("DMX Configured."); }
+  delay(10);
+  if (dmxReceive.start()) { Serial.println("DMX reception Started"); }
+  else { Serial.println("DMX aborted"); }
+
   neoStrip1.Begin(); neoStrip1.Show(); // Clear strip
 
   Serial.println("Setup complete.");
@@ -66,6 +75,10 @@ void setup() {
 void loop() {
   delay(10);
   if (Serial.available()) { parseSerial(fixtureData1, Serial.readString()); }
+
+  if (dmxReceive.hasUpdated()) {  // only read new values
+    Serial.printf("DMX read: %d", dmxReceive.read(dmxStartChannel1 + 0));
+  }
 
   updateStrip(fixtureData1, pixelStrip1);
   neoStrip1.Show();
