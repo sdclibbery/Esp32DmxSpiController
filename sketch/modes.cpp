@@ -1,14 +1,6 @@
 #include <cmath>
 #include "modes.h"
 
-Rgb blend (Rgb left, Rgb right, float lerp) {
-    return Rgb(
-      left.red + ((static_cast<int16_t>(right.red) - left.red) * lerp),
-      left.green + ((static_cast<int16_t>(right.green) - left.green) * lerp),
-      left.blue + ((static_cast<int16_t>(right.blue) - left.blue) * lerp)
-    );
-}
-
 float limit (float x) {
   if (std::isnan(x)) { return 0.0f; }
   if (x < 0.0f) { return 0.0f; }
@@ -16,11 +8,12 @@ float limit (float x) {
   return x;
 }
 
-float powerSmooth (float x, float p) {
-  x = limit(x);
-  p = limit(p);
-  if (p < 0.5f) { return std::pow(x, 1.0f + (0.5f - p)*128.0f); }
-  else { return std::pow(x, 1.0f / (1.0f + (p - 0.5f)*128.0f)); }
+Rgb blend (Rgb left, Rgb right, float lerp) {
+    return Rgb(
+      left.red + ((static_cast<int16_t>(right.red) - left.red) * lerp),
+      left.green + ((static_cast<int16_t>(right.green) - left.green) * lerp),
+      left.blue + ((static_cast<int16_t>(right.blue) - left.blue) * lerp)
+    );
 }
 
 Rgb palette3Way(const Rgb& a, const Rgb& b, const Rgb& c, float lerp) {
@@ -41,6 +34,16 @@ Rgb palette(uint8_t type, const Rgb& back, const Rgb& fore, float lerp) {
     case 3: return palette3Way(back, off, fore, lerp);
   }
   return off;
+}
+
+float powerSmooth (float x, float p) {
+  x = limit(x);
+  p = limit(p);
+  if (p < 0.5f) {
+    return std::pow(x, 1.0f + std::pow(2.0f*(0.5f - p),3.0f)*128.0f);
+  } else {
+    return std::pow(x, 1.0f / (1.0f + std::pow(2.0f*(p - 0.5f),3.0f)*128.0f));
+  }
 }
 
 float gradient (float lerp, float con, float smooth) {

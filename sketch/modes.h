@@ -25,8 +25,15 @@ struct FixtureData {
   uint8_t mode;
   float control;
   float smooth;
-  Rgb fore;
   Rgb back;
+  Rgb fore;
+  FixtureData (Rgb _back, Rgb _fore) {
+    mode = 0;
+    control = 0;
+    smooth = 0;
+    back = _back;
+    fore = _fore;
+  }
 };
 
 void updateStrip(const FixtureData& data, PixelStrip& strip);
