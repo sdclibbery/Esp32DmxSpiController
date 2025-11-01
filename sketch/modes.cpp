@@ -1,4 +1,5 @@
 #include <cmath>
+#include <Arduino.h>
 #include "modes.h"
 
 float limit (float x) {
@@ -55,14 +56,14 @@ float gradient (float lerp, float con, float smooth) {
 }
 
 // 0-3: Solid: Blend entire strip through the palette based on control, smoothing does nothing
-void modeSolid(const FixtureData& data, PixelStrip& strip) {
+void modeSolid(const Controls& data, PixelStrip& strip) {
   for (uint16_t i=0; i<strip.length; i++ ) {
     strip.pixels[i] = data.control;
   }
 }
 
 // 12-15: StartBar: solid bar rises from start of strip, control is length of bar, smooth is lerp power in rest of strip
-void modeStartBar(const FixtureData& data, PixelStrip& strip) {
+void modeStartBar(const Controls& data, PixelStrip& strip) {
   for (uint16_t i=0; i<strip.length; i++ ) {
     float lerp = (float)i / (float)(strip.length-1); // Position along strip
     lerp = gradient(lerp, data.control, data.smooth);
@@ -71,7 +72,7 @@ void modeStartBar(const FixtureData& data, PixelStrip& strip) {
 }
 
 // 16-19: EndBar: solid bar falls from end of strip, control is length of bar, smooth is lerp power in rest of strip
-void modeEndBar(const FixtureData& data, PixelStrip& strip) {
+void modeEndBar(const Controls& data, PixelStrip& strip) {
   for (uint16_t i=0; i<strip.length; i++ ) {
     float lerp = (float)i / (float)(strip.length-1); // Position along strip
     lerp = 1.0f - lerp; // Go from end
@@ -81,7 +82,7 @@ void modeEndBar(const FixtureData& data, PixelStrip& strip) {
 }
 
 // 20-23: MidBar: solid bar expands from centre of strip, control is length of bar, smooth is lerp power in rest of strip
-void modeMidBar(const FixtureData& data, PixelStrip& strip) {
+void modeMidBar(const Controls& data, PixelStrip& strip) {
   for (uint16_t i=0; i<strip.length; i++ ) {
     float lerp = (float)i / (float)(strip.length-1); // Position along strip
     lerp = std::abs(0.5f - lerp)*2.0f; // Go outwards from middle
@@ -90,7 +91,25 @@ void modeMidBar(const FixtureData& data, PixelStrip& strip) {
   }
 }
 
-void updateStrip(const FixtureData& data, PixelStrip& strip) {
+// 24-27: Paddle: One light is on. Control is location. Trail fades through palette when it moves. Smoothing is trail fade rate
+void fade(const Controls& data, PixelStrip& strip) {
+  // Set paddle pixel
+  uint16_t paddleIdx = data.control*strip.length;
+  strip.pixels[paddleIdx] = 1.0f;
+  // Fade everything else
+  for (uint16_t i=0; i<strip.length; i++ ) {
+    if (i == paddleIdx) { continue; }
+    strip.pixels[i] -= strip.dt / (data.smooth + 0.001f);
+    limit(strip.pixels[i]);
+  }
+}
+
+void updateStrip(const Controls& data, PixelStrip& strip) {
+  // Timing
+  unsigned long timeNow = micros();
+  strip.dt = (float)(timeNow - strip.lastUpdateTime) / 1000000.0f; // delta time in seconds
+  if (strip.dt > 0.1f) { strip.dt = 0.1f; }
+  strip.lastUpdateTime = timeNow;
   // Apply mode and calculate new pixel scalar values
   uint8_t mode = data.mode & 0xfc;
   switch (mode) {
@@ -100,11 +119,13 @@ void updateStrip(const FixtureData& data, PixelStrip& strip) {
     case 12: modeStartBar(data, strip); break;
     case 16: modeEndBar(data, strip); break;
     case 20: modeMidBar(data, strip); break;
+    case 36: fade(data, strip); break;
   }
   // Apply palette and set colours
   uint8_t paletteType = data.mode & 0x03;
   for (uint16_t i=0; i<strip.length; i++ ) {
     strip.setPixel(i, palette(paletteType, data.back, data.fore, strip.pixels[i]));
   }
+  strip.lastControlValue = data.control;
 }
 

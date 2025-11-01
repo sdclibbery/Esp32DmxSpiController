@@ -15,21 +15,26 @@ struct Rgb {
 struct PixelStrip {
   uint16_t length;
   float* pixels;
+  unsigned long lastUpdateTime;
+  float dt;
+  float lastControlValue;
   void (*setPixel) (uint16_t index, Rgb color);
   PixelStrip (uint16_t _length, void (*_setPixel) (uint16_t index, Rgb color)) {
     length = _length;
     pixels = new float[length] {};
     setPixel = _setPixel;
+    lastUpdateTime = 0;
+    dt = 0.0f;
   }
 };
 
-struct FixtureData {
+struct Controls {
   uint8_t mode;
   float control;
   float smooth;
   Rgb back;
   Rgb fore;
-  FixtureData (Rgb _back, Rgb _fore) {
+  Controls (Rgb _back, Rgb _fore) {
     mode = 0;
     control = 0;
     smooth = 0;
@@ -38,4 +43,4 @@ struct FixtureData {
   }
 };
 
-void updateStrip(const FixtureData& data, PixelStrip& strip);
+void updateStrip(const Controls& data, PixelStrip& strip);

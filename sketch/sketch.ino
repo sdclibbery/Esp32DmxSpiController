@@ -5,13 +5,11 @@
 #include "modes.h"
 
 /* TODO
- Palette asymmetry should be a channel
- Fade time should be a channel, and should be available on all modes
-  ?No? Fade doesn't make sense for most modes. Some kind of Temporal blur might, but ould it even be useful??
  Try DMX
   ?https://github.com/devarishi7/Dmx_ESP32
   ?https://github.com/mathertel/DMXSerial
  More modes
+ Palette asymmetry should be a channel?
  DMX base channel
  3 strips
  Consider rewriting Serial handling: https://gemini.google.com/app/9bacdb891b977834 (but Geminis code is all over the place, inc setTimeout taking MILLIs)
@@ -40,19 +38,19 @@ const uint16_t dmxStartChannel1 = 1;
 NeoPixelStrip neoStrip1(pixelCount1, DATA0);
 void setPixel1 (uint16_t index, Rgb color) { neoStrip1.SetPixelColor(index, RgbColor(color.red, color.green, color.blue)); }
 PixelStrip pixelStrip1(pixelCount1, setPixel1);
-FixtureData fixtureData1(Rgb(0,0,4),Rgb(12,12,0));
+Controls controls1(Rgb(0,0,4),Rgb(12,12,0));
 
-void parseSerial (FixtureData& fixtureData, String data) { // For testing
+void parseSerial (Controls& controls, String data) { // For testing
   Serial.println(data);
-  if (data.startsWith("m")) { fixtureData.mode = data.substring(1).toInt(); }
-  if (data.startsWith("c")) { fixtureData.control = ((float)data.substring(1).toInt())/255; }
-  if (data.startsWith("s")) { fixtureData.smooth = ((float)data.substring(1).toInt())/255; }
-  if (data.startsWith("r")) { fixtureData.back.red = data.substring(1).toInt(); }
-  if (data.startsWith("g")) { fixtureData.back.green = data.substring(1).toInt(); }
-  if (data.startsWith("b")) { fixtureData.back.blue = data.substring(1).toInt(); }
-  if (data.startsWith("R")) { fixtureData.fore.red = data.substring(1).toInt(); }
-  if (data.startsWith("G")) { fixtureData.fore.green = data.substring(1).toInt(); }
-  if (data.startsWith("B")) { fixtureData.fore.blue = data.substring(1).toInt(); }
+  if (data.startsWith("m")) { controls.mode = data.substring(1).toInt(); }
+  if (data.startsWith("c")) { controls.control = ((float)data.substring(1).toInt())/255; }
+  if (data.startsWith("s")) { controls.smooth = ((float)data.substring(1).toInt())/255; }
+  if (data.startsWith("r")) { controls.back.red = data.substring(1).toInt(); }
+  if (data.startsWith("g")) { controls.back.green = data.substring(1).toInt(); }
+  if (data.startsWith("b")) { controls.back.blue = data.substring(1).toInt(); }
+  if (data.startsWith("R")) { controls.fore.red = data.substring(1).toInt(); }
+  if (data.startsWith("G")) { controls.fore.green = data.substring(1).toInt(); }
+  if (data.startsWith("B")) { controls.fore.blue = data.substring(1).toInt(); }
 }
 
 void setup() {
@@ -75,12 +73,12 @@ void setup() {
 
 void loop() {
   delay(10);
-  if (Serial.available()) { parseSerial(fixtureData1, Serial.readString()); }
+  if (Serial.available()) { parseSerial(controls1, Serial.readString()); }
 
   if (dmxReceive.hasUpdated()) {  // only read new values
     Serial.printf("DMX read: %d", dmxReceive.read(dmxStartChannel1 + 0));
   }
 
-  updateStrip(fixtureData1, pixelStrip1);
+  updateStrip(controls1, pixelStrip1);
   neoStrip1.Show();
 }
