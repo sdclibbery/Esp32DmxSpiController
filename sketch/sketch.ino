@@ -4,8 +4,8 @@
 #include "modes.h"
 
 /* TODO
- Fade should be modes or a channel, should be available on all modes
- Also, palette asymmetry should be channel???
+ Palette asymmetry should be a channel
+ Fade should be a channel, should be available on all modes
  Try DMX
   ?https://github.com/devarishi7/Dmx_ESP32
   ?https://github.com/mathertel/DMXSerial
@@ -22,22 +22,21 @@
 #define DMX_TX_PIN    17 // UART2 Transmit Pin
 #define DMX_EN_PIN    21 // Direction Enable Pin (Controls RS-485 transceiver)
 
-// DMX 
-const uint16_t dmxStartChannel = 1;
-
 // LED setup
 #define CLOCK 5
-#define DATA0 19
+#define DATA0 27 // Top most output
 #define DATA1 18
-#define DATA2 27 
-const uint16_t pixelCount = 16;
+#define DATA2 19 // Bottom output
 typedef NeoPixelBus<NeoGrbFeature, NeoEsp32I2s1X8Ws2812xMethod> NeoPixelStrip;
 // typedef NeoPixelBus<NeoGrbwFeature, NeoEsp32I2s1X8Sk6812Method> NeoPixelStrip;
 
-// Strip 1
-NeoPixelStrip neoStrip1(pixelCount, DATA2);
+// Strips
+const uint16_t pixelCount1 = 16;
+const uint16_t dmxStartChannel1 = 1;
+NeoPixelStrip neoStrip1(pixelCount1, DATA0);
 void setPixel1 (uint16_t index, Rgb color) { neoStrip1.SetPixelColor(index, RgbColor(color.red, color.green, color.blue)); }
-PixelStrip pixelStrip1(pixelCount, setPixel1);
+PixelStrip pixelStrip1(pixelCount1, setPixel1);
+FixtureData fixtureData1(Rgb(0,0,4),Rgb(12,12,0));
 
 void parseSerial (FixtureData& fixtureData, String data) { // For testing
   Serial.println(data);
@@ -62,12 +61,10 @@ void setup() {
   Serial.println("Setup complete.");
 }
 
-FixtureData fixtureData(Rgb(0,0,4),Rgb(12,12,0));
 void loop() {
   delay(10);
+  if (Serial.available()) { parseSerial(fixtureData1, Serial.readString()); }
 
-  if (Serial.available()) { parseSerial(fixtureData, Serial.readString()); }
-
-  updateStrip(fixtureData, pixelStrip1);
+  updateStrip(fixtureData1, pixelStrip1);
   neoStrip1.Show();
 }
