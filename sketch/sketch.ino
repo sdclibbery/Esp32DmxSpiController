@@ -7,6 +7,7 @@
 /* TODO
  Palette asymmetry should be a channel
  Fade time should be a channel, and should be available on all modes
+  ?No? Fade doesn't make sense for most modes. Some kind of Temporal blur might, but ould it even be useful??
  Try DMX
   ?https://github.com/devarishi7/Dmx_ESP32
   ?https://github.com/mathertel/DMXSerial

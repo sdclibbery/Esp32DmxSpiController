@@ -56,45 +56,42 @@ float gradient (float lerp, float con, float smooth) {
 
 // 0-3: Solid: Blend entire strip through the palette based on control, smoothing does nothing
 void modeSolid(const FixtureData& data, PixelStrip& strip) {
-  uint8_t paletteType = data.mode & 0x03;
   for (uint16_t i=0; i<strip.length; i++ ) {
-    strip.setPixel(i, palette(paletteType, data.back, data.fore, data.control));
+    strip.pixels[i] = data.control;
   }
 }
 
 // 12-15: StartBar: solid bar rises from start of strip, control is length of bar, smooth is lerp power in rest of strip
 void modeStartBar(const FixtureData& data, PixelStrip& strip) {
-  uint8_t paletteType = data.mode & 0x03;
   for (uint16_t i=0; i<strip.length; i++ ) {
     float lerp = (float)i / (float)(strip.length-1); // Position along strip
     lerp = gradient(lerp, data.control, data.smooth);
-    strip.setPixel(i, palette(paletteType, data.back, data.fore, lerp));
+    strip.pixels[i] = lerp;
   }
 }
 
 // 16-19: EndBar: solid bar falls from end of strip, control is length of bar, smooth is lerp power in rest of strip
 void modeEndBar(const FixtureData& data, PixelStrip& strip) {
-  uint8_t paletteType = data.mode & 0x03;
   for (uint16_t i=0; i<strip.length; i++ ) {
     float lerp = (float)i / (float)(strip.length-1); // Position along strip
     lerp = 1.0f - lerp; // Go from end
     lerp = gradient(lerp, data.control, data.smooth);
-    strip.setPixel(i, palette(paletteType, data.back, data.fore, lerp));
+    strip.pixels[i] = lerp;
   }
 }
 
 // 20-23: MidBar: solid bar expands from centre of strip, control is length of bar, smooth is lerp power in rest of strip
 void modeMidBar(const FixtureData& data, PixelStrip& strip) {
-  uint8_t paletteType = data.mode & 0x03;
   for (uint16_t i=0; i<strip.length; i++ ) {
     float lerp = (float)i / (float)(strip.length-1); // Position along strip
     lerp = std::abs(0.5f - lerp)*2.0f; // Go outwards from middle
     lerp = gradient(lerp, data.control, data.smooth);
-    strip.setPixel(i, palette(paletteType, data.back, data.fore, lerp));
+    strip.pixels[i] = lerp;
   }
 }
 
 void updateStrip(const FixtureData& data, PixelStrip& strip) {
+  // Apply mode and calculate new pixel scalar values
   uint8_t mode = data.mode & 0xfc;
   switch (mode) {
     case 0: modeSolid(data, strip); break;
@@ -103,6 +100,11 @@ void updateStrip(const FixtureData& data, PixelStrip& strip) {
     case 12: modeStartBar(data, strip); break;
     case 16: modeEndBar(data, strip); break;
     case 20: modeMidBar(data, strip); break;
+  }
+  // Apply palette and set colours
+  uint8_t paletteType = data.mode & 0x03;
+  for (uint16_t i=0; i<strip.length; i++ ) {
+    strip.setPixel(i, palette(paletteType, data.back, data.fore, strip.pixels[i]));
   }
 }
 

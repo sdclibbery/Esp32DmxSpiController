@@ -14,9 +14,11 @@ struct Rgb {
 
 struct PixelStrip {
   uint16_t length;
+  float* pixels;
   void (*setPixel) (uint16_t index, Rgb color);
   PixelStrip (uint16_t _length, void (*_setPixel) (uint16_t index, Rgb color)) {
     length = _length;
+    pixels = new float[length] {};
     setPixel = _setPixel;
   }
 };
