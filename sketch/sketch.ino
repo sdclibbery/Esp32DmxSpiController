@@ -5,7 +5,7 @@
 
 /* TODO
  Palette asymmetry should be a channel
- Fade should be a channel, should be available on all modes
+ Fade time should be a channel, and should be available on all modes
  Try DMX
   ?https://github.com/devarishi7/Dmx_ESP32
   ?https://github.com/mathertel/DMXSerial
@@ -55,6 +55,8 @@ void setup() {
   Serial.begin(115200);
   while (!Serial); // wait for serial attach
   Serial.println("Setup starting.");
+  Serial.printf("ESP32 Chip Revision: %d\n", ESP.getChipRevision());
+  Serial.printf("ESP32 Arduino core version: %s\n", ESP_ARDUINO_VERSION_STR);
 
   neoStrip1.Begin(); neoStrip1.Show(); // Clear strip
 
