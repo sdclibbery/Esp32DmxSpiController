@@ -9,8 +9,8 @@
   ?https://github.com/devarishi7/Dmx_ESP32
   ?https://github.com/mathertel/DMXSerial
  More modes
- Palette asymmetry should be a channel?
- DMX base channel
+ More palettes
+ Set DMX base channel and remember it: how to set? Web interface? Serial? DIPs? Buttons+display?
  3 strips
  Consider rewriting Serial handling: https://gemini.google.com/app/9bacdb891b977834 (but Geminis code is all over the place, inc setTimeout taking MILLIs)
  DMX pass through
@@ -43,6 +43,7 @@ Controls controls1(Rgb(0,0,4),Rgb(12,12,0));
 void parseSerial (Controls& controls, String data) { // For testing
   Serial.println(data);
   if (data.startsWith("m")) { controls.mode = data.substring(1).toInt(); }
+  if (data.startsWith("p")) { controls.palette = data.substring(1).toInt(); }
   if (data.startsWith("c")) { controls.control = ((float)data.substring(1).toInt())/255; }
   if (data.startsWith("s")) { controls.smooth = ((float)data.substring(1).toInt())/255; }
   if (data.startsWith("r")) { controls.back.red = data.substring(1).toInt(); }

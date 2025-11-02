@@ -30,12 +30,14 @@ struct PixelStrip {
 
 struct Controls {
   uint8_t mode;
+  uint8_t palette;
   float control;
   float smooth;
   Rgb back;
   Rgb fore;
   Controls (Rgb _back, Rgb _fore) {
     mode = 0;
+    palette = 0;
     control = 0;
     smooth = 0;
     back = _back;

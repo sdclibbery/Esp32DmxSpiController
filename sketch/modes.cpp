@@ -47,6 +47,11 @@ float powerSmooth (float x, float p) {
   }
 }
 
+void fadePixel (const Controls& data, PixelStrip& strip, uint16_t idx) {
+  strip.pixels[idx] -= strip.dt / (data.smooth + 0.001f);
+  limit(strip.pixels[idx]);
+}
+
 float gradient (float lerp, float con, float smooth) {
   if (lerp < con) { lerp = 1.0f; } // Solid section
   else { lerp = 1.0f - (lerp - con)/(1.0f - con); } // Gradient sectioon
@@ -55,15 +60,22 @@ float gradient (float lerp, float con, float smooth) {
   return lerp;
 }
 
-// 0-3: Solid: Blend entire strip through the palette based on control, smoothing does nothing
-void modeSolid(const Controls& data, PixelStrip& strip) {
+// 0: Fade: Whatever is currently showing, fade it down through the palette. Control does nothing, smooth is fade time.
+void fade(const Controls& data, PixelStrip& strip) {
+  for (uint16_t i=0; i<strip.length; i++ ) {
+    fadePixel(data, strip, i);
+  }
+}
+
+// 1: Solid: Blend entire strip through the palette based on control, smoothing does nothing
+void solid(const Controls& data, PixelStrip& strip) {
   for (uint16_t i=0; i<strip.length; i++ ) {
     strip.pixels[i] = data.control;
   }
 }
 
-// 12-15: StartBar: solid bar rises from start of strip, control is length of bar, smooth is lerp power in rest of strip
-void modeStartBar(const Controls& data, PixelStrip& strip) {
+// 10: StartGradient: solid bar rises from start of strip, control is length of bar, smooth is lerp power in rest of strip
+void startGradient(const Controls& data, PixelStrip& strip) {
   for (uint16_t i=0; i<strip.length; i++ ) {
     float lerp = (float)i / (float)(strip.length-1); // Position along strip
     lerp = gradient(lerp, data.control, data.smooth);
@@ -71,8 +83,8 @@ void modeStartBar(const Controls& data, PixelStrip& strip) {
   }
 }
 
-// 16-19: EndBar: solid bar falls from end of strip, control is length of bar, smooth is lerp power in rest of strip
-void modeEndBar(const Controls& data, PixelStrip& strip) {
+// 11: EndGradient: solid bar falls from end of strip, control is length of bar, smooth is lerp power in rest of strip
+void endGradient(const Controls& data, PixelStrip& strip) {
   for (uint16_t i=0; i<strip.length; i++ ) {
     float lerp = (float)i / (float)(strip.length-1); // Position along strip
     lerp = 1.0f - lerp; // Go from end
@@ -81,8 +93,8 @@ void modeEndBar(const Controls& data, PixelStrip& strip) {
   }
 }
 
-// 20-23: MidBar: solid bar expands from centre of strip, control is length of bar, smooth is lerp power in rest of strip
-void modeMidBar(const Controls& data, PixelStrip& strip) {
+// 12: MidGradient: solid bar expands from centre of strip, control is length of bar, smooth is lerp power in rest of strip
+void midGradient(const Controls& data, PixelStrip& strip) {
   for (uint16_t i=0; i<strip.length; i++ ) {
     float lerp = (float)i / (float)(strip.length-1); // Position along strip
     lerp = std::abs(0.5f - lerp)*2.0f; // Go outwards from middle
@@ -91,16 +103,15 @@ void modeMidBar(const Controls& data, PixelStrip& strip) {
   }
 }
 
-// 24-27: Paddle: One light is on. Control is location. Trail fades through palette when it moves. Smoothing is trail fade rate
-void fade(const Controls& data, PixelStrip& strip) {
+// 22: DrawFade: Same as Draw, but drawn pixels slowly fade back to back colour. Smoothing is fade time
+void drawFade(const Controls& data, PixelStrip& strip) {
   // Set paddle pixel
   uint16_t paddleIdx = data.control*strip.length;
   strip.pixels[paddleIdx] = 1.0f;
   // Fade everything else
   for (uint16_t i=0; i<strip.length; i++ ) {
     if (i == paddleIdx) { continue; }
-    strip.pixels[i] -= strip.dt / (data.smooth + 0.001f);
-    limit(strip.pixels[i]);
+    fadePixel(data, strip, i);
   }
 }
 
@@ -111,20 +122,18 @@ void updateStrip(const Controls& data, PixelStrip& strip) {
   if (strip.dt > 0.1f) { strip.dt = 0.1f; }
   strip.lastUpdateTime = timeNow;
   // Apply mode and calculate new pixel scalar values
-  uint8_t mode = data.mode & 0xfc;
+  uint8_t mode = data.mode;
   switch (mode) {
-    case 0: modeSolid(data, strip); break;
-    // case 4: modeNoise(data, strip); break;
-    // case 8: modeBlocks(data, strip); break;
-    case 12: modeStartBar(data, strip); break;
-    case 16: modeEndBar(data, strip); break;
-    case 20: modeMidBar(data, strip); break;
-    case 36: fade(data, strip); break;
+    case 0: fade(data, strip); break;
+    case 1: solid(data, strip); break;
+    case 10: startGradient(data, strip); break;
+    case 11: endGradient(data, strip); break;
+    case 12: midGradient(data, strip); break;
+    case 22: drawFade(data, strip); break;
   }
   // Apply palette and set colours
-  uint8_t paletteType = data.mode & 0x03;
   for (uint16_t i=0; i<strip.length; i++ ) {
-    strip.setPixel(i, palette(paletteType, data.back, data.fore, strip.pixels[i]));
+    strip.setPixel(i, palette(data.palette, data.back, data.fore, strip.pixels[i]));
   }
   strip.lastControlValue = data.control;
 }
