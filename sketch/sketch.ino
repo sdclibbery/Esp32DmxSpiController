@@ -5,15 +5,20 @@
 #include "modes.h"
 
 /* TODO
- Try DMX
-  ?https://github.com/devarishi7/Dmx_ESP32
-  ?https://github.com/mathertel/DMXSerial
+SOFTWARE
  More modes
  More palettes
  Set DMX base channel and remember it: how to set? Web interface? Serial? DIPs? Buttons+display?
- 3 strips
- Consider rewriting Serial handling: https://gemini.google.com/app/9bacdb891b977834 (but Geminis code is all over the place, inc setTimeout taking MILLIs)
- DMX pass through
+ 3 SK6812 strips
+HARDWARE
+ Project case
+ USB port
+ DMX passhrough connectors
+ Large PSU
+ 5 strip connectors
+ 5 SK6812 strips
+ Stands/mounting for strips
+ Leads for strips
 */
 
 // Hardware Definitions for ESP32 DMX Shield (UART2)
@@ -21,24 +26,24 @@
 #define DMX_RX_PIN    16 // UART2 Receive Pin
 #define DMX_TX_PIN    17 // UART2 Transmit Pin
 #define DMX_EN_PIN    21 // Direction Enable Pin (Controls RS-485 transceiver)
-#define LED_GREEN     13
-dmxRx dmxReceive = dmxRx(&Serial1, DMX_RX_PIN, DMX_RX_PIN, DMX_EN_PIN, LED_GREEN, LOW);  // the toggle LED is
+#define LED_DMX     13
+dmxRx dmxReceive = dmxRx(&Serial1, DMX_RX_PIN, DMX_RX_PIN, DMX_EN_PIN, LED_DMX, LOW);  // This LED is on the board to show when DMX is being received
 
 // LED setup
-#define CLOCK 5
-#define DATA0 27 // Top most output
-#define DATA1 18
-#define DATA2 19 // Bottom output
+#define LED_CLOCK 5
+#define LED_DATA0 27 // Top most output
+#define LED_DATA1 18
+#define LED_DATA2 19
 typedef NeoPixelBus<NeoGrbFeature, NeoEsp32I2s1X8Ws2812xMethod> NeoPixelStrip;
 // typedef NeoPixelBus<NeoGrbwFeature, NeoEsp32I2s1X8Sk6812Method> NeoPixelStrip;
 
 // Strips
 const uint16_t pixelCount1 = 30;
 const uint16_t dmxStartChannel1 = 1;
-NeoPixelStrip neoStrip1(pixelCount1, DATA0);
+NeoPixelStrip neoStrip1(pixelCount1, LED_DATA0);
 void setPixel1 (uint16_t index, Rgb color) { neoStrip1.SetPixelColor(index, RgbColor(color.red, color.green, color.blue)); }
 PixelStrip pixelStrip1(pixelCount1, setPixel1);
-Controls controls1(Rgb(0,0,4),Rgb(12,12,0));
+Controls controls1(Rgb(0,0,4),Rgb(8,0,0));
 
 void parseSerial (Controls& controls, String data) { // For testing
   Serial.println(data);
@@ -86,7 +91,7 @@ void loop() {
     controls1.fore.red = dmxReceive.read(dmxStartChannel1 + 7);
     controls1.fore.green = dmxReceive.read(dmxStartChannel1 + 8);
     controls1.fore.blue = dmxReceive.read(dmxStartChannel1 + 9);
-    Serial.printf("DMX frame. Mode: %d Palette: %d Control: %f Smooth: %f\n", controls1.mode, controls1.palette, controls1.control, controls1.smooth);
+    // Serial.printf("DMX frame. Mode: %d Palette: %d Control: %.2f Smooth: %.2f\n", controls1.mode, controls1.palette, controls1.control, controls1.smooth);
   } else {
     delay(10);
   }
