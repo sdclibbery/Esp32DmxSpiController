@@ -37,10 +37,14 @@ Dmx_ESP32 https://github.com/devarishi7/Dmx_ESP32
 
 ### Drawing
 20: Draw: Control sets draw pos. Fore is drawn into the strip at draw pos. Smoothing is palette pos to draw with.
-21: Line: Same as Draw, but draw all pixels between last pos and new pos
-22: DrawFade: Same as Draw, but drawn pixels slowly fade back to back colour. Smoothing is fade time
-23: LineFade: Same as DrawFade but subsequent draw positions are connected not separate
-24: DrawScroll: Control sets draw pos. Fore is drawn into the strip at draw pos. Smoothing is scroll pos.
-25: LineScroll: Same as DrawScroll, but draw all pixels between last pos and new pos
+21: DrawFade: Same as Draw, but drawn pixels slowly fade back to back colour. Smoothing is fade time
+22: DrawScroll: Control sets draw pos. Fore is drawn into the strip at draw pos. Smoothing is scroll pos.
+23: DrawScrollFade: Control sets draw pos. Fore is drawn into the strip at draw pos. Smoothing is scroll pos. Fade time is fixed long.
+
+### Line drawing
+30: Line: Same as Draw, but draw all pixels between last pos and new pos
+31: LineFade: Same as DrawFade but subsequent draw positions are connected not separate
+32: LineScroll: Same as DrawScroll, but draw all pixels between last pos and new pos
+32: LineScrollFade: Same as DrawScrollFade, but draw all pixels between last pos and new pos
 
 
