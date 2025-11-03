@@ -33,7 +33,7 @@ typedef NeoPixelBus<NeoGrbFeature, NeoEsp32I2s1X8Ws2812xMethod> NeoPixelStrip;
 // typedef NeoPixelBus<NeoGrbwFeature, NeoEsp32I2s1X8Sk6812Method> NeoPixelStrip;
 
 // Strips
-const uint16_t pixelCount1 = 16;
+const uint16_t pixelCount1 = 30;
 const uint16_t dmxStartChannel1 = 1;
 NeoPixelStrip neoStrip1(pixelCount1, DATA0);
 void setPixel1 (uint16_t index, Rgb color) { neoStrip1.SetPixelColor(index, RgbColor(color.red, color.green, color.blue)); }
@@ -73,11 +73,22 @@ void setup() {
 }
 
 void loop() {
-  delay(10);
   if (Serial.available()) { parseSerial(controls1, Serial.readString()); }
 
   if (dmxReceive.hasUpdated()) {  // only read new values
-    Serial.printf("DMX read: %d", dmxReceive.read(dmxStartChannel1 + 0));
+    controls1.mode = dmxReceive.read(dmxStartChannel1 + 0);
+    controls1.palette = dmxReceive.read(dmxStartChannel1 + 1);
+    controls1.control = ((float)dmxReceive.read(dmxStartChannel1 + 2))/255;
+    controls1.smooth = ((float)dmxReceive.read(dmxStartChannel1 + 3))/255;
+    controls1.back.red = dmxReceive.read(dmxStartChannel1 + 4);
+    controls1.back.green = dmxReceive.read(dmxStartChannel1 + 5);
+    controls1.back.blue = dmxReceive.read(dmxStartChannel1 + 6);
+    controls1.fore.red = dmxReceive.read(dmxStartChannel1 + 7);
+    controls1.fore.green = dmxReceive.read(dmxStartChannel1 + 8);
+    controls1.fore.blue = dmxReceive.read(dmxStartChannel1 + 9);
+    Serial.printf("DMX frame. Mode: %d Palette: %d Control: %f Smooth: %f\n", controls1.mode, controls1.palette, controls1.control, controls1.smooth);
+  } else {
+    delay(10);
   }
 
   updateStrip(controls1, pixelStrip1);
