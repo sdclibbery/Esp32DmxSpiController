@@ -1,5 +1,4 @@
 #include <cmath>
-#include <Arduino.h>
 #include "modes.h"
 #include "palettes.h"
 
@@ -88,9 +87,8 @@ void drawFade(const Controls& data, PixelStrip& strip) {
   strip.pixels[paddleIdx] = 1.0f;
 }
 
-void updateStrip(const Controls& data, PixelStrip& strip) {
+void updateStrip(const Controls& data, PixelStrip& strip, unsigned long timeNow) {
   // Timing
-  unsigned long timeNow = micros();
   strip.dt = (float)(timeNow - strip.lastUpdateTime) / 1000000.0f; // delta time in seconds
   if (strip.dt > 0.1f) { strip.dt = 0.1f; }
   strip.lastUpdateTime = timeNow;
@@ -102,7 +100,7 @@ void updateStrip(const Controls& data, PixelStrip& strip) {
     case 10: startGradient(data, strip); break;
     case 11: endGradient(data, strip); break;
     case 12: midGradient(data, strip); break;
-    case 22: drawFade(data, strip); break;
+    case 21: drawFade(data, strip); break;
   }
   // Apply palette and set colours
   for (uint16_t i=0; i<strip.length; i++ ) {

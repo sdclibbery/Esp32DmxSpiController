@@ -1,5 +1,4 @@
 #include <cmath>
-#include <Arduino.h>
 #include "palettes.h"
 
 static float limit (float x) {

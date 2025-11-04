@@ -6,7 +6,6 @@
 
 /* TODO
 SOFTWARE
- !TEST drawFade!
  More modes
  More palettes
  Set DMX base channel and remember it: how to set? Web interface? Serial? DIPs? Buttons+display?
@@ -97,6 +96,6 @@ void loop() {
     delay(10);
   }
 
-  updateStrip(controls1, pixelStrip1);
+  updateStrip(controls1, pixelStrip1, micros());
   neoStrip1.Show();
 }

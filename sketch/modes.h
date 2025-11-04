@@ -45,4 +45,4 @@ struct Controls {
   }
 };
 
-void updateStrip(const Controls& data, PixelStrip& strip);
+void updateStrip(const Controls& data, PixelStrip& strip, unsigned long timeNow);
