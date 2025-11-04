@@ -25,6 +25,12 @@ static void fadePixel (const Controls& data, PixelStrip& strip, uint16_t idx) {
   limit(strip.pixels[idx]);
 }
 
+void fadeAll(const Controls& data, PixelStrip& strip) {
+  for (uint16_t i=0; i<strip.length; i++ ) {
+    fadePixel(data, strip, i);
+  }
+}
+
 static float gradient (float lerp, float con, float smooth) {
   if (lerp < con) { lerp = 1.0f; } // Solid section
   else { lerp = 1.0f - (lerp - con)/(1.0f - con); } // Gradient sectioon
@@ -35,9 +41,7 @@ static float gradient (float lerp, float con, float smooth) {
 
 // 0: Fade: Whatever is currently showing, fade it down through the palette. Control does nothing, smooth is fade time.
 static void fade(const Controls& data, PixelStrip& strip) {
-  for (uint16_t i=0; i<strip.length; i++ ) {
-    fadePixel(data, strip, i);
-  }
+  fadeAll(data, strip);
 }
 
 // 1: Solid: Blend entire strip through the palette based on control, smoothing does nothing
@@ -78,14 +82,10 @@ static void midGradient(const Controls& data, PixelStrip& strip) {
 
 // 22: DrawFade: Same as Draw, but drawn pixels slowly fade back to back colour. Smoothing is fade time
 void drawFade(const Controls& data, PixelStrip& strip) {
-  // Set paddle pixel
+  fadeAll(data, strip);
+  // Set pixel to be drawn
   uint16_t paddleIdx = data.control*strip.length;
   strip.pixels[paddleIdx] = 1.0f;
-  // Fade everything else
-  for (uint16_t i=0; i<strip.length; i++ ) {
-    if (i == paddleIdx) { continue; }
-    fadePixel(data, strip, i);
-  }
 }
 
 void updateStrip(const Controls& data, PixelStrip& strip) {

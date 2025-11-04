@@ -25,7 +25,9 @@ Dmx_ESP32 https://github.com/devarishi7/Dmx_ESP32
 0: Fade: Whatever is currently showing, fade it down through the palette. Control does nothing, smooth is fade time.
 1: Solid: Blend entire strip through the palette based on control, smoothing does nothing
  ??? Smoothing applies a bow curve along the strip?
-2: Noise: Perlin noise. Control is seed. Smoothing is scale (or octaves??)
+2: Gradient: control sets start palette position, smoothing sets end palette position, blend between the two
+3: Sine: Sine waves. Control is phase, smoothing is wavelength
+4: Noise: Perlin noise. Control is seed. Smoothing is scale (and/or octaves??)
 
 ### Meter
 10: StartGradient: solid bar rises from start of strip, control is length of bar, smooth is lerp power in rest of strip

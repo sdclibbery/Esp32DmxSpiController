@@ -6,6 +6,7 @@
 
 /* TODO
 SOFTWARE
+ !TEST drawFade!
  More modes
  More palettes
  Set DMX base channel and remember it: how to set? Web interface? Serial? DIPs? Buttons+display?
