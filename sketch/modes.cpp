@@ -66,6 +66,15 @@ static void gradientMode(const Controls& data, PixelStrip& strip) {
   }
 }
 
+// 3: Sine: Sine waves. Control is phase, smoothing is wavelength
+static void sineMode(const Controls& data, PixelStrip& strip) {
+  for (uint16_t i=0; i<strip.length; i++ ) {
+    float pos = (float)i / (float)(strip.length-1);
+    float value = (std::sin((pos - data.control) * (1.0f + data.smooth*8.0f) * 2.0f * 3.14159265f) + 1.0f) / 2.0f;
+    strip.pixels[i] = value;
+  }
+}
+
 // 10: StartGradient: solid bar rises from start of strip, control is length of bar, smooth is lerp power in rest of strip
 static void startGradient(const Controls& data, PixelStrip& strip) {
   for (uint16_t i=0; i<strip.length; i++ ) {
@@ -114,6 +123,7 @@ void updateStrip(const Controls& data, PixelStrip& strip, unsigned long timeNow)
     case 0: fadeMode(data, strip); break;
     case 1: solid(data, strip); break;
     case 2: gradientMode(data, strip); break;
+    case 3: sineMode(data, strip); break;
     case 10: startGradient(data, strip); break;
     case 11: endGradient(data, strip); break;
     case 12: midGradient(data, strip); break;
