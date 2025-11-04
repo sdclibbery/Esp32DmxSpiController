@@ -73,7 +73,7 @@ int main () {
         input_index = 0;
         memset(input_buffer, 0, sizeof(input_buffer));
         printf("\x1b[%d;%dH", 2, 0);
-        printf("         ", key);
+        printf("         ");
       }
       if (key == 'q' || key == 'Q') { running = 0; }
     }

@@ -9,6 +9,10 @@ static float limit (float x) {
   return x;
 }
 
+static float lerp (float a, float b, float lerp) {
+  return a + (b - a) * limit(lerp);
+}
+
 static float powerSmooth (float x, float p) {
   x = limit(x);
   p = limit(p);
@@ -39,14 +43,26 @@ static float gradient (float lerp, float con, float smooth) {
 }
 
 // 0: Fade: Whatever is currently showing, fade it down through the palette. Control does nothing, smooth is fade time.
-static void fade(const Controls& data, PixelStrip& strip) {
+static void fadeMode(const Controls& data, PixelStrip& strip) {
   fadeAll(data, strip);
 }
 
 // 1: Solid: Blend entire strip through the palette based on control, smoothing does nothing
 static void solid(const Controls& data, PixelStrip& strip) {
   for (uint16_t i=0; i<strip.length; i++ ) {
-    strip.pixels[i] = data.control;
+    float pos = (float)i / (float)(strip.length-1);
+    float value = data.control;
+    value += data.smooth * 16.0f * (0.03125f - std::pow(pos - 0.5f, 4.0f));
+    value = limit(value);
+    strip.pixels[i] = value;
+  }
+}
+
+// 2: Gradient: control sets start palette position, smoothing sets end palette position, blend between the two
+static void gradientMode(const Controls& data, PixelStrip& strip) {
+  for (uint16_t i=0; i<strip.length; i++ ) {
+    float pos = (float)i / (float)(strip.length-1);
+    strip.pixels[i] = lerp(data.control, data.smooth, pos);
   }
 }
 
@@ -95,8 +111,9 @@ void updateStrip(const Controls& data, PixelStrip& strip, unsigned long timeNow)
   // Apply mode and calculate new pixel scalar values
   uint8_t mode = data.mode;
   switch (mode) {
-    case 0: fade(data, strip); break;
+    case 0: fadeMode(data, strip); break;
     case 1: solid(data, strip); break;
+    case 2: gradientMode(data, strip); break;
     case 10: startGradient(data, strip); break;
     case 11: endGradient(data, strip); break;
     case 12: midGradient(data, strip); break;
