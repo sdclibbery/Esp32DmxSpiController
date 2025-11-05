@@ -114,12 +114,44 @@ static void midGradient(const Controls& data, PixelStrip& strip) {
   }
 }
 
+// 13: StartFade: solid bar rises from start of strip, control is length of bar, smooth is fade time
+static void startFade(const Controls& data, PixelStrip& strip) {
+  fadeAll(data, strip);
+  for (uint16_t i=0; i<strip.length; i++ ) {
+    float pos = (float)i / (float)(strip.length-1);
+    if (pos <= data.control) {
+      strip.pixels[i] = 1.0f;
+    }
+  }
+}
+
+// 14: EndFade: solid bar falls from end of strip, control is length of bar, smooth is fade time
+static void endFade(const Controls& data, PixelStrip& strip) {
+  fadeAll(data, strip);
+  for (uint16_t i=0; i<strip.length; i++ ) {
+    float pos = (float)i / (float)(strip.length-1);
+    if (pos > 1.0f - data.control) {
+      strip.pixels[i] = 1.0f;
+    }
+  }
+}
+
+// 15: MidFade: solid bar expands from centre of strip, control is length of bar, smooth is fade time
+static void midFade(const Controls& data, PixelStrip& strip) {
+  fadeAll(data, strip);
+  for (uint16_t i=0; i<strip.length; i++ ) {
+    float pos = (float)i / (float)(strip.length-1);
+    if (std::abs(0.5f - pos)*2.0f <= data.control) {
+      strip.pixels[i] = 1.0f;
+    }
+  }
+}
+
 // 22: DrawFade: Same as Draw, but drawn pixels slowly fade back to back colour. Smoothing is fade time
 void drawFade(const Controls& data, PixelStrip& strip) {
   fadeAll(data, strip);
-  // Set pixel to be drawn
-  uint16_t paddleIdx = data.control*strip.length;
-  strip.pixels[paddleIdx] = 1.0f;
+  uint16_t drawIdx = data.control*strip.length;
+  strip.pixels[drawIdx] = 1.0f;
 }
 
 void updateStrip(const Controls& data, PixelStrip& strip, unsigned long timeNow) {
@@ -138,6 +170,9 @@ void updateStrip(const Controls& data, PixelStrip& strip, unsigned long timeNow)
     case 10: startGradient(data, strip); break;
     case 11: endGradient(data, strip); break;
     case 12: midGradient(data, strip); break;
+    case 13: startFade(data, strip); break;
+    case 14: endFade(data, strip); break;
+    case 15: midFade(data, strip); break;
     case 21: drawFade(data, strip); break;
   }
   // Apply palette and set colours

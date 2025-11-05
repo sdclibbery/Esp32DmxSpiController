@@ -6,8 +6,6 @@
 
 /* TODO
 SOFTWARE
- Noise mode
-  !!Build failing on arduino
  More modes
  More palettes
  Set DMX base channel and remember it: how to set? Web interface? Serial? DIPs? Buttons+display?
