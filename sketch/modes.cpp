@@ -147,7 +147,13 @@ static void midFade(const Controls& data, PixelStrip& strip) {
   }
 }
 
-// 22: DrawFade: Same as Draw, but drawn pixels slowly fade back to back colour. Smoothing is fade time
+// 20: Draw: Control sets draw pos. Fore is drawn into the strip at draw pos. Smoothing is palette pos to draw with.
+void draw(const Controls& data, PixelStrip& strip) {
+  uint16_t drawIdx = data.control*strip.length;
+  strip.pixels[drawIdx] = data.smooth;
+}
+
+// 21: DrawFade: Same as Draw, but drawn pixels slowly fade back to back colour. Smoothing is fade time
 void drawFade(const Controls& data, PixelStrip& strip) {
   fadeAll(data, strip);
   uint16_t drawIdx = data.control*strip.length;
@@ -173,6 +179,7 @@ void updateStrip(const Controls& data, PixelStrip& strip, unsigned long timeNow)
     case 13: startFade(data, strip); break;
     case 14: endFade(data, strip); break;
     case 15: midFade(data, strip); break;
+    case 20: draw(data, strip); break;
     case 21: drawFade(data, strip); break;
   }
   // Apply palette and set colours
