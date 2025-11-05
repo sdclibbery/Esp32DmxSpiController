@@ -1,6 +1,7 @@
 #include <cmath>
 #include "modes.h"
 #include "palettes.h"
+#include "perlin.h"
 
 static float limit (float x) {
   if (std::isnan(x)) { return 0.0f; }
@@ -75,6 +76,15 @@ static void sineMode(const Controls& data, PixelStrip& strip) {
   }
 }
 
+// 4: Noise: Perlin noise. Control is seed. Smoothing is scale and octaves
+static void noiseMode(const Controls& data, PixelStrip& strip) {
+  for (uint16_t i=0; i<strip.length; i++ ) {
+    float pos = (float)i / (float)(strip.length-1);
+    float value = perlin_noise_octaves(pos-data.control, 0.1f + data.smooth*0.5f, 4);
+    strip.pixels[i] = limit(value*(1.0f + data.smooth)*2.0f + 0.7f);
+  }
+}
+
 // 10: StartGradient: solid bar rises from start of strip, control is length of bar, smooth is lerp power in rest of strip
 static void startGradient(const Controls& data, PixelStrip& strip) {
   for (uint16_t i=0; i<strip.length; i++ ) {
@@ -124,6 +134,7 @@ void updateStrip(const Controls& data, PixelStrip& strip, unsigned long timeNow)
     case 1: solid(data, strip); break;
     case 2: gradientMode(data, strip); break;
     case 3: sineMode(data, strip); break;
+    case 4: noiseMode(data, strip); break;
     case 10: startGradient(data, strip); break;
     case 11: endGradient(data, strip); break;
     case 12: midGradient(data, strip); break;
