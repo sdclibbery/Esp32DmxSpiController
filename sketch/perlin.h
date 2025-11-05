@@ -1,3 +1,3 @@
 #pragma once
 
-float perlin_noise_octaves(float x, float scale, int octaves);
+float perlin_octaves(float x, float y, int octaves, float persistence, float lacunarity);

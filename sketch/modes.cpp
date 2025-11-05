@@ -80,8 +80,8 @@ static void sineMode(const Controls& data, PixelStrip& strip) {
 static void noiseMode(const Controls& data, PixelStrip& strip) {
   for (uint16_t i=0; i<strip.length; i++ ) {
     float pos = (float)i / (float)(strip.length-1);
-    float value = perlin_noise_octaves(pos-data.control, 0.1f + data.smooth*0.5f, 4);
-    strip.pixels[i] = limit(value*(1.0f + data.smooth)*2.0f + 0.7f);
+    float value = perlin_octaves(0.5f+pos*(8.0f - data.smooth*7.0f), data.control, 4, 0.5f, 2.0f);
+    strip.pixels[i] = limit(value*(1.0f + data.smooth) + 0.5f);
   }
 }
 

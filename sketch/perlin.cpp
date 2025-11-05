@@ -1,147 +1,173 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-#include <float.h>
+#include <time.h>
 
-// --- Constants ---
-#define P_SIZE 512 // Must be a power of 2, used for the permutation array size (256 * 2)
-#define P_MASK 255 // Mask for modulo 256 operation
+// --- Perlin Noise Implementation ---
 
-// Global permutation array (stores random indices/hashes)
-static int p[P_SIZE]; 
-static int p_inited = 0;
-
-// --- Core Helper Functions ---
+// The permutation table. This is a lookup table of random values.
+// We duplicate it to 512 to avoid having to use the modulo operator
+// (which is slow) when indexing.
+static int p[512];
+static bool inited = false;
 
 /**
- * @brief Smoothstep function (6t^5 - 15t^4 + 10t^3) for interpolation.
- * @param t Interpolation factor (0.0 to 1.0).
- * @return Smoothed value.
+ * @brief Initializes the permutation table with random values.
+ * This should be called once at the beginning of your program.
  */
-static inline float fade(float t) {
-    return t * t * t * (t * (t * 6.0f - 15.0f) + 10.0f);
-}
-
-/**
- * @brief Linear interpolation.
- * @param a Start value.
- * @param b End value.
- * @param t Interpolation factor (0.0 to 1.0).
- * @return Interpolated value.
- */
-static inline float lerp(float a, float b, float t) {
-    return a + t * (b - a);
-}
-
-/**
- * @brief 1D Gradient function (Dot product of coordinate offset and random gradient vector).
- * * In 1D, the gradient is simply -1 or 1. We use the hash value to determine the sign.
- * @param hash A value from the permutation table (0-255).
- * @param x The offset from the cell corner (x - X).
- * @return The result of the dot product (either x or -x).
- */
-static inline float grad(int hash, float x) {
-    // Check the least significant bit of the hash
-    return (hash & 1) == 0 ? -x : x;
-}
-
-// --- Initialization ---
-
-/**
- * @brief Initializes the permutation array with a given seed.
- * * Uses Fisher-Yates shuffle algorithm and doubles the array to P_SIZE=512 
- * to simplify boundary checks in the main noise function.
- * @param seed The starting seed for the random number generator.
- */
-static void init_perlin(unsigned int seed) {
-    int i;
-    // 1. Initialize the first 256 elements
-    for (i = 0; i < 256; i++) {
+static void perlin_init() {
+    // Fill the first 256 entries with 0-255
+    for (int i = 0; i < 256; i++) {
         p[i] = i;
     }
 
-    // 2. Seed and shuffle (Fisher-Yates)
-    srand(seed);
-    for (i = 0; i < 256; i++) {
-        // Generate a random index j between i and 255
-        int j = rand() % 256;
-        
-        // Swap p[i] and p[j]
+    // Seed the random number generator
+    srand((unsigned int)time(NULL));
+
+    // Shuffle the array using Fisher-Yates shuffle
+    for (int i = 255; i > 0; i--) {
+        int j = rand() % (i + 1);
         int temp = p[i];
         p[i] = p[j];
         p[j] = temp;
     }
 
-    // 3. Duplicate the array to avoid modulo operations later (P_SIZE=512)
-    for (i = 0; i < 256; i++) {
+    // Duplicate the table to the second 256 entries
+    for (int i = 0; i < 256; i++) {
         p[i + 256] = p[i];
     }
 }
 
-// --- Single Octave Noise Function ---
-
 /**
- * @brief Generates a single octave of Perlin noise for a given coordinate.
- * @param x The 1D coordinate.
- * @return The noise value, typically in the range [-1.0, 1.0].
+ * @brief The "fade" function. This is a quintic polynomial 
+ *        (6t^5 - 15t^4 + 10t^3) which has 0 first and second
+ *        derivatives at t=0 and t=1, creating smoother transitions.
  */
-static float perlin_noise_single(float x) {
-    // 1. Determine unit cell coordinates and fractional part (t)
-    long X = (long)floorf(x);
-    float xf = x - X; // Fractional part (t)
-
-    // 2. Hash coordinate to get permutation index (using P_MASK == 255)
-    int X_mod = (int)(X & P_MASK);
-
-    // 3. Look up gradient hashes for the two endpoints (X and X+1)
-    int g0 = p[X_mod];     // Hash for X
-    int g1 = p[X_mod + 1]; // Hash for X+1
-
-    // 4. Interpolate factor (u) using the smoothstep function
-    float u = fade(xf);
-
-    // 5. Calculate influence from the two end gradients
-    float influence_0 = grad(g0, xf);
-    float influence_1 = grad(g1, xf - 1.0f); // Offset coordinate for the right side
-
-    // 6. Interpolate the influences
-    return lerp(influence_0, influence_1, u);
+static float fade(float t) {
+    return t * t * t * (t * (t * 6.0f - 15.0f) + 10.0f);
 }
 
-
-// --- Fractal (Multi-Octave) Noise Function ---
+/**
+ * @brief Linear interpolation.
+ */
+static float lerp(float t, float a, float b) {
+    return a + t * (b - a);
+}
 
 /**
- * @brief Generates fractal Perlin noise using multiple octaves.
- * @param x The 1D coordinate input.
- * @param scale The frequency multiplier (how zoomed in the noise is).
- * @param octaves The number of noise layers to combine for detail.
- * @return The normalized multi-octave noise value, typically in the range [-1.0, 1.0].
+ * @brief Calculates the dot product of a gradient vector and the
+ *        distance vector from a grid point to the sample point.
+ * @param hash The hash value from the permutation table.
+ * @param x Fractional x.
+ * @param y Fractional y.
  */
-float perlin_noise_octaves(float x, float scale, int octaves) {
+static float grad(int hash, float x, float y) {
+    // Get the lower 3 bits of the hash
+    int h = hash & 7; 
+    
+    // Select one of 8 gradient vectors
+    float u = h < 4 ? x : y;
+    float v = h < 4 ? y : x;
+
+    // (1,1), (-1,1), (1,-1), (-1,-1), (1,0), (-1,0), (0,1), (0,-1)
+    // The last bit (h&1) determines the sign of u
+    // The second to last bit (h&2) determines the sign of v
+    return ((h & 1) == 0 ? u : -u) + ((h & 2) == 0 ? v : -v);
+}
+
+/**
+ * @brief Calculates a single octave of 2D Perlin noise.
+ * @param x The x-coordinate.
+ * @param y The y-coordinate.
+ * @return The noise value, in the range [-1.0, 1.0].
+ */
+static float perlin(float x, float y) {
+    // Find the integer grid cell coordinates (X, Y)
+    // We use floorf() for floats
+    int xi = (int)floorf(x);
+    int yi = (int)floorf(y);
+
+    // Get the fractional part of x and y (xf, yf)
+    float xf = x - (float)xi;
+    float yf = y - (float)yi;
+
+    // We must bitwise-AND with 255 to keep indices within 0-255
+    int X = xi & 255;
+    int Y = yi & 255;
+
+    // Calculate the fade-curved values for interpolation
+    float u = fade(xf);
+    float v = fade(yf);
+
+    // Get the hash values for the 4 corners of the grid cell
+    // p[p[X] + Y]     -> top-left
+    // p[p[X+1] + Y]   -> top-right
+    // p[p[X] + Y+1]   -> bottom-left
+    // p[p[X+1] + Y+1] -> bottom-right
+    // We add 1 to Y/X for the bottom/right corners
+    int aa = p[p[X] + Y];
+    int ba = p[p[X + 1] + Y];
+    int ab = p[p[X] + Y + 1];
+    int bb = p[p[X + 1] + Y + 1];
+
+    // Calculate the dot products (influences)
+    // xf and yf are the distances from the top-left corner
+    float grad_aa = grad(aa, xf, yf);
+    float grad_ba = grad(ba, xf - 1.0f, yf);       // xf-1 for right edge
+    float grad_ab = grad(ab, xf, yf - 1.0f);       // yf-1 for bottom edge
+    float grad_bb = grad(bb, xf - 1.0f, yf - 1.0f); // xf-1, yf-1 for bottom-right
+
+    // Interpolate along x
+    float lerp_top = lerp(u, grad_aa, grad_ba);
+    float lerp_bottom = lerp(u, grad_ab, grad_bb);
+
+    // Interpolate along y
+    float noise = lerp(v, lerp_top, lerp_bottom);
+    
+    // The result is *approximately* in [-1, 1], but we can
+    // scale it slightly to ensure it's fully in that range.
+    // 0.707 is sqrt(2)/2, which is the max possible value
+    // for 2D. Let's use a slightly more generous factor.
+    return noise * 1.4f;
+}
+
+/**
+ * @brief Generates 2D Perlin noise by summing multiple octaves.
+ *
+ * @param x The x-coordinate.
+ * @param y The y-coordinate.
+ * @param octaves The number of octaves to sum (e.g., 4).
+ * @param persistence The persistence value (e.g., 0.5). This is the
+ *                    factor by which the amplitude of each successive
+ *                    octave is multiplied.
+ * @param lacunarity The lacunarity value (e.g., 2.0). This is the
+ *                   factor by which the frequency of each successive
+ *                   octave is multiplied.
+ * @return The resulting multi-octave noise value.
+ */
+float perlin_octaves(float x, float y, int octaves, float persistence, float lacunarity) {
     float total = 0.0f;
     float frequency = 1.0f;
     float amplitude = 1.0f;
     float max_value = 0.0f; // Used for normalization
 
-    if (!p_inited) { init_perlin(42); }
-
-    if (scale <= FLT_MIN) scale = 1.0f; // Prevent division by zero/near zero
+    if (!inited) {
+        perlin_init();
+        inited = true;
+    }
 
     for (int i = 0; i < octaves; i++) {
-        // The coordinate is scaled by frequency and the base 'scale'
-        total += perlin_noise_single(x * frequency / scale) * amplitude;
-        
-        // Accumulate maximum possible value for normalization
+        // Get the noise value for this octave
+        total += perlin(x * frequency, y * frequency) * amplitude;
+
+        // Add to the maximum possible value
         max_value += amplitude;
-        
-        // Increase frequency for the next octave (more detail)
-        frequency *= 2.0f;
-        
-        // Decrease amplitude for the next octave (less influence)
-        amplitude *= 0.5f;
+
+        // Modify amplitude and frequency for the next octave
+        amplitude *= persistence;
+        frequency *= lacunarity;
     }
-    
-    // Normalize the result to ensure it stays in the range [-1.0, 1.0]
+
+    // Normalize the result to be in the range [-1.0, 1.0]
     return total / max_value;
 }
