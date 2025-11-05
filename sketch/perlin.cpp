@@ -50,7 +50,7 @@ static float fade(float t) {
 /**
  * @brief Linear interpolation.
  */
-static float lerp(float t, float a, float b) {
+static float lerp_perlin(float t, float a, float b) {
     return a + t * (b - a);
 }
 
@@ -118,11 +118,11 @@ static float perlin(float x, float y) {
     float grad_bb = grad(bb, xf - 1.0f, yf - 1.0f); // xf-1, yf-1 for bottom-right
 
     // Interpolate along x
-    float lerp_top = lerp(u, grad_aa, grad_ba);
-    float lerp_bottom = lerp(u, grad_ab, grad_bb);
+    float lerp_top = lerp_perlin(u, grad_aa, grad_ba);
+    float lerp_bottom = lerp_perlin(u, grad_ab, grad_bb);
 
     // Interpolate along y
-    float noise = lerp(v, lerp_top, lerp_bottom);
+    float noise = lerp_perlin(v, lerp_top, lerp_bottom);
     
     // The result is *approximately* in [-1, 1], but we can
     // scale it slightly to ensure it's fully in that range.

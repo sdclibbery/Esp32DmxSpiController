@@ -26,7 +26,7 @@ Dmx_ESP32 https://github.com/devarishi7/Dmx_ESP32
 1: Solid: Blend entire strip through the palette based on control, smoothing applies a curved palette profile
 2: Gradient: control sets start palette position, smoothing sets end palette position, blend between the two
 3: Sine: Sine waves. Control is phase, smoothing is wavelength
-4: Noise: Perlin noise. Control is seed. Smoothing is scale and octaves
+4: Noise: Perlin noise. Control is seed. Smoothing is scale
 
 ### Meter
 10: StartGradient: solid bar rises from start of strip, control is length of bar, smooth is lerp power in rest of strip
