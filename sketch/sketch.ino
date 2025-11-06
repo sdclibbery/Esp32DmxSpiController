@@ -6,6 +6,8 @@
 
 /* TODO
 SOFTWARE
+ DMX not working now :-/
+ Scroll: Slow scrolls do nothing; either need to accumulate or do subpixel scroll
  More modes
  More palettes
  Set DMX base channel and remember it: how to set? Web interface? Serial? DIPs? Buttons+display?
@@ -26,8 +28,8 @@ HARDWARE
 #define DMX_RX_PIN    16 // UART2 Receive Pin
 #define DMX_TX_PIN    17 // UART2 Transmit Pin
 #define DMX_EN_PIN    21 // Direction Enable Pin (Controls RS-485 transceiver)
-#define LED_DMX     13
-dmxRx dmxReceive = dmxRx(&Serial1, DMX_RX_PIN, DMX_RX_PIN, DMX_EN_PIN, LED_DMX, LOW);  // This LED is on the board to show when DMX is being received
+#define LED_DMX       13 // Onboard red led
+dmxRx dmxReceive = dmxRx(&Serial1, DMX_RX_PIN, DMX_RX_PIN, DMX_EN_PIN, LED_DMX, LOW);  // The LED is on the board to show when DMX is being received
 
 // LED setup
 #define LED_CLOCK 5
@@ -45,7 +47,7 @@ void setPixel1 (uint16_t index, Rgb color) { neoStrip1.SetPixelColor(index, RgbC
 PixelStrip pixelStrip1(pixelCount1, setPixel1);
 Controls controls1(Rgb(0,0,4),Rgb(8,0,0));
 
-void parseSerial (Controls& controls, String data) { // For testing
+static void parseSerial (Controls& controls, String data) { // For testing
   Serial.println(data);
   if (data.startsWith("m")) { controls.mode = data.substring(1).toInt(); }
   if (data.startsWith("p")) { controls.palette = data.substring(1).toInt(); }
@@ -57,6 +59,19 @@ void parseSerial (Controls& controls, String data) { // For testing
   if (data.startsWith("R")) { controls.fore.red = data.substring(1).toInt(); }
   if (data.startsWith("G")) { controls.fore.green = data.substring(1).toInt(); }
   if (data.startsWith("B")) { controls.fore.blue = data.substring(1).toInt(); }
+}
+
+static void parseDmx (Controls& controls, const uint16_t dmxStartChannel) {
+  controls.mode = dmxReceive.read(dmxStartChannel + 0);
+  controls.palette = dmxReceive.read(dmxStartChannel + 1);
+  controls.control = ((float)dmxReceive.read(dmxStartChannel + 2))/255;
+  controls.smooth = ((float)dmxReceive.read(dmxStartChannel + 3))/255;
+  controls.back.red = dmxReceive.read(dmxStartChannel + 4);
+  controls.back.green = dmxReceive.read(dmxStartChannel + 5);
+  controls.back.blue = dmxReceive.read(dmxStartChannel + 6);
+  controls.fore.red = dmxReceive.read(dmxStartChannel + 7);
+  controls.fore.green = dmxReceive.read(dmxStartChannel + 8);
+  controls.fore.blue = dmxReceive.read(dmxStartChannel + 9);
 }
 
 void setup() {
@@ -81,21 +96,11 @@ void loop() {
   if (Serial.available()) { parseSerial(controls1, Serial.readString()); }
 
   if (dmxReceive.hasUpdated()) {  // only read new values
-    controls1.mode = dmxReceive.read(dmxStartChannel1 + 0);
-    controls1.palette = dmxReceive.read(dmxStartChannel1 + 1);
-    controls1.control = ((float)dmxReceive.read(dmxStartChannel1 + 2))/255;
-    controls1.smooth = ((float)dmxReceive.read(dmxStartChannel1 + 3))/255;
-    controls1.back.red = dmxReceive.read(dmxStartChannel1 + 4);
-    controls1.back.green = dmxReceive.read(dmxStartChannel1 + 5);
-    controls1.back.blue = dmxReceive.read(dmxStartChannel1 + 6);
-    controls1.fore.red = dmxReceive.read(dmxStartChannel1 + 7);
-    controls1.fore.green = dmxReceive.read(dmxStartChannel1 + 8);
-    controls1.fore.blue = dmxReceive.read(dmxStartChannel1 + 9);
+    parseDmx(control1, dmxStartChannel1);
     // Serial.printf("DMX frame. Mode: %d Palette: %d Control: %.2f Smooth: %.2f\n", controls1.mode, controls1.palette, controls1.control, controls1.smooth);
-  } else {
-    delay(10);
   }
 
   updateStrip(controls1, pixelStrip1, micros());
   neoStrip1.Show();
+  delay(10);
 }

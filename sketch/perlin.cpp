@@ -22,7 +22,7 @@ static void perlin_init() {
     }
 
     // Seed the random number generator
-    srand((unsigned int)time(NULL));
+    srand(25432); // Fixed seed for reproducibility
 
     // Shuffle the array using Fisher-Yates shuffle
     for (int i = 255; i > 0; i--) {
