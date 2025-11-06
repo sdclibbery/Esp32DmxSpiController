@@ -7,10 +7,9 @@
 /* TODO
 SOFTWARE
  DMX not working now :-/
- Scroll: Slow scrolls do nothing; either need to accumulate or do subpixel scroll
  More modes
  More palettes
- Set DMX base channel and remember it: how to set? Web interface? Serial? DIPs? Buttons+display?
+ Set DMX base channel and remember it: how to set? Web interface? Serial? DIPs? Buttons+display? How to remember?
  3 SK6812 strips
 HARDWARE
  Project case

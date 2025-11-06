@@ -24,14 +24,14 @@ static float powerSmooth (float x, float p) {
   }
 }
 
-static void fadePixel (const Controls& data, PixelStrip& strip, uint16_t idx) {
-  strip.pixels[idx] -= strip.dt / (data.smooth + 0.001f);
+static void fadePixel (const Controls& data, PixelStrip& strip, uint16_t idx, float fadeTime) {
+  strip.pixels[idx] -= strip.dt / (fadeTime + 0.001f);
   limit(strip.pixels[idx]);
 }
 
-void fadeAll(const Controls& data, PixelStrip& strip) {
+void fadeAll(const Controls& data, PixelStrip& strip, float fadeTime) {
   for (uint16_t i=0; i<strip.length; i++ ) {
-    fadePixel(data, strip, i);
+    fadePixel(data, strip, i, fadeTime);
   }
 }
 
@@ -44,7 +44,7 @@ static float gradient (float lerp, float con, float smooth) {
 }
 
 static void scroll(const Controls& data, PixelStrip& strip) {
-  float scrollDelta = data.smooth - strip.lastSmooth;
+  float scrollDelta = data.smooth - strip.lastScrollPos;
   if (scrollDelta > 0.5f) { scrollDelta -= 1.0f; }
   if (scrollDelta < -0.5f) { scrollDelta += 1.0f; }
   // If scrollDelta is small this frame, accumulate it
@@ -53,12 +53,13 @@ static void scroll(const Controls& data, PixelStrip& strip) {
     for (uint16_t i=0; i<strip.length; i++ ) {
       strip.pixels[i] = strip.lastPixels[(strip.length + i - scrollSteps) % strip.length];
     }
+    strip.lastScrollPos = data.smooth; // Only set when actually scrolled so that slow scrolling works
   }
 }
 
 // 0: Fade: Whatever is currently showing, fade it down through the palette. Control does nothing, smooth is fade time.
 static void fadeMode(const Controls& data, PixelStrip& strip) {
-  fadeAll(data, strip);
+  fadeAll(data, strip, data.smooth);
 }
 
 // 1. Scroll: Scroll whatever is currently showing. Control does nothing, smooth is scroll pos.
@@ -134,7 +135,7 @@ static void midGradient(const Controls& data, PixelStrip& strip) {
 
 // 13: StartFade: solid bar rises from start of strip, control is length of bar, smooth is fade time
 static void startFade(const Controls& data, PixelStrip& strip) {
-  fadeAll(data, strip);
+  fadeAll(data, strip, data.smooth);
   for (uint16_t i=0; i<strip.length; i++ ) {
     float pos = (float)i / (float)(strip.length-1);
     if (pos <= data.control) {
@@ -145,7 +146,7 @@ static void startFade(const Controls& data, PixelStrip& strip) {
 
 // 14: EndFade: solid bar falls from end of strip, control is length of bar, smooth is fade time
 static void endFade(const Controls& data, PixelStrip& strip) {
-  fadeAll(data, strip);
+  fadeAll(data, strip, data.smooth);
   for (uint16_t i=0; i<strip.length; i++ ) {
     float pos = (float)i / (float)(strip.length-1);
     if (pos > 1.0f - data.control) {
@@ -156,7 +157,7 @@ static void endFade(const Controls& data, PixelStrip& strip) {
 
 // 15: MidFade: solid bar expands from centre of strip, control is length of bar, smooth is fade time
 static void midFade(const Controls& data, PixelStrip& strip) {
-  fadeAll(data, strip);
+  fadeAll(data, strip, data.smooth);
   for (uint16_t i=0; i<strip.length; i++ ) {
     float pos = (float)i / (float)(strip.length-1);
     if (std::abs(0.5f - pos)*2.0f <= data.control) {
@@ -173,7 +174,7 @@ void draw(const Controls& data, PixelStrip& strip) {
 
 // 21: DrawFade: Same as Draw, but drawn pixels slowly fade back to back colour. Smoothing is fade time
 void drawFade(const Controls& data, PixelStrip& strip) {
-  fadeAll(data, strip);
+  fadeAll(data, strip, data.smooth);
   uint16_t drawIdx = data.control*strip.length;
   strip.pixels[drawIdx] = 1.0f;
 }
@@ -187,6 +188,10 @@ void drawScroll(const Controls& data, PixelStrip& strip) {
 
 // 23. DrawScrollFade: Control sets draw pos. Fore is drawn into the strip at draw pos. Smoothing is scroll pos. Fade time is fixed long.
 void drawScrollFade(const Controls& data, PixelStrip& strip) {
+  fadeAll(data, strip, 1.0f);
+  scroll(data, strip);
+  uint16_t drawIdx = data.control*strip.length;
+  strip.pixels[drawIdx] = 1.0f;
 }
 
 void updateStrip(const Controls& data, PixelStrip& strip, unsigned long timeNow) {
@@ -219,7 +224,5 @@ void updateStrip(const Controls& data, PixelStrip& strip, unsigned long timeNow)
     strip.setPixel(i, palette(data.palette, data.back, data.fore, strip.pixels[i]));
     strip.lastPixels[i] = strip.pixels[i];
   }
-  strip.lastControl = data.control;
-  strip.lastSmooth = data.smooth;
 }
 
