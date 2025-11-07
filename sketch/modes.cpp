@@ -167,32 +167,32 @@ static void midFade(const Controls& data, PixelStrip& strip) {
   }
 }
 
-// 30: Draw: Control sets draw pos. Fore is drawn into the strip at draw pos. Smoothing is palette pos to draw with.
-void draw(const Controls& data, PixelStrip& strip) {
-  uint16_t drawIdx = data.control*strip.length;
-  strip.pixels[drawIdx] = data.smooth;
+// 30: plot: Control sets plot pos. Fore is drawn into the strip at plot pos. Smoothing is palette pos to plot with.
+void plot(const Controls& data, PixelStrip& strip) {
+  uint16_t plotIdx = data.control*strip.length;
+  strip.pixels[plotIdx] = data.smooth;
 }
 
-// 31: DrawFade: Same as Draw, but drawn pixels slowly fade back to back colour. Smoothing is fade time
-void drawFade(const Controls& data, PixelStrip& strip) {
+// 31: plotFade: Same as plot, but drawn pixels slowly fade back to back colour. Smoothing is fade time
+void plotFade(const Controls& data, PixelStrip& strip) {
   fadeAll(data, strip, data.smooth);
-  uint16_t drawIdx = data.control*strip.length;
-  strip.pixels[drawIdx] = 1.0f;
+  uint16_t plotIdx = data.control*strip.length;
+  strip.pixels[plotIdx] = 1.0f;
 }
 
-// 32. DrawScroll: Control sets draw pos. Fore is drawn into the strip at draw pos. Smoothing is scroll pos.
-void drawScroll(const Controls& data, PixelStrip& strip) {
+// 32. plotScroll: Control sets plot pos. Fore is drawn into the strip at plot pos. Smoothing is scroll pos.
+void plotScroll(const Controls& data, PixelStrip& strip) {
   scroll(data, strip);
-  uint16_t drawIdx = data.control*strip.length;
-  strip.pixels[drawIdx] = 1.0f;
+  uint16_t plotIdx = data.control*strip.length;
+  strip.pixels[plotIdx] = 1.0f;
 }
 
-// 33. DrawScrollFade: Control sets draw pos. Fore is drawn into the strip at draw pos. Smoothing is scroll pos. Fade time is fixed long.
-void drawScrollFade(const Controls& data, PixelStrip& strip) {
+// 33. plotScrollFade: Control sets plot pos. Fore is drawn into the strip at plot pos. Smoothing is scroll pos. Fade time is fixed long.
+void plotScrollFade(const Controls& data, PixelStrip& strip) {
   fadeAll(data, strip, 1.0f);
   scroll(data, strip);
-  uint16_t drawIdx = data.control*strip.length;
-  strip.pixels[drawIdx] = 1.0f;
+  uint16_t plotIdx = data.control*strip.length;
+  strip.pixels[plotIdx] = 1.0f;
 }
 
 void updateStrip(const Controls& data, PixelStrip& strip, unsigned long timeNow) {
@@ -215,10 +215,10 @@ void updateStrip(const Controls& data, PixelStrip& strip, unsigned long timeNow)
     case 25: startFade(data, strip); break;
     case 26: endFade(data, strip); break;
     case 27: midFade(data, strip); break;
-    case 30: draw(data, strip); break;
-    case 31: drawFade(data, strip); break;
-    case 32: drawScroll(data, strip); break;
-    case 33: drawScrollFade(data, strip); break;
+    case 30: plot(data, strip); break;
+    case 31: plotFade(data, strip); break;
+    case 32: plotScroll(data, strip); break;
+    case 33: plotScrollFade(data, strip); break;
   }
   // Apply palette and set colours
   for (uint16_t i=0; i<strip.length; i++ ) {

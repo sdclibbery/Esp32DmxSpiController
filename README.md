@@ -5,11 +5,11 @@ ESP32 based DMX controller for SPI LED strips
 ### SOFTWARE
 * NEED drawline etc
 * Try ways to improve the apparent dynamic range: apply power scaling when setting actual neopixel colours?
-* EndGradient and EndFade: opposite of mid
+* EndsGradient and EndsFade: opposite of mid
 * Fizzle fade modes
-* Want a mode to draw with pos, palette entry controls, but also a fade
-* Want palette off to rainbow red->pink
-* ?Draw with diffusing blur-out effect instead of fade?
+* Want a mode to draw at end, with palette draw control, scrolling, and fixed fade (ticker/matrix mode)
+* Want palette off->red->rainbow->pink
+* Blur (diffuse and slight fade): own mode and for more plot/line modes
 * More modes
 * More palettes
 * Set DMX base channel and remember it: how to set? Web interface? Serial? DIPs? Buttons+display? How to remember?
@@ -50,6 +50,8 @@ Dmx_ESP32 https://github.com/devarishi7/Dmx_ESP32
 0. Fade: Whatever is currently showing, fade it down through the palette. Control does nothing, smooth is fade time.
  ??? control should set target palette position, and it fades to that?
 1. Scroll: Scroll whatever is currently showing. Control does nothing, smooth is scroll pos.
+2. Fizzle: Whatever is currently showing, fizzle it down through the palette. Control does nothing, smooth is fizzle time.
+ ??? control should set target palette position, and it fades to that?
 
 ### Full strip
 10. Solid: Blend entire strip through the palette based on control, smoothing applies a curved palette profile
@@ -61,22 +63,24 @@ Dmx_ESP32 https://github.com/devarishi7/Dmx_ESP32
 20. StartGradient: solid bar rises from start of strip, control is length of bar, smooth is lerp power in rest of strip
 21. EndGradient: solid bar falls from end of strip, control is length of bar, smooth is lerp power in rest of strip
 22. MidGradient: solid bar expands from centre of strip, control is length of bar, smooth is lerp power in rest of strip
-23. EndGradient: solid bar expands from both ends of strup, control is length of bar, smooth is lerp power in rest of strip
+23. EndsGradient: solid bar expands from both ends of strup, control is length of bar, smooth is lerp power in rest of strip
 25. StartFade: solid bar rises from start of strip, control is length of bar, smooth is fade time
 26. EndFade: solid bar falls from end of strip, control is length of bar, smooth is fade time
 27. MidFade: solid bar expands from centre of strip, control is length of bar, smooth is fade time
-28. EndFade: solid bar expands from both ends of strip, control is length of bar, smooth is fade time
+28. EndsFade: solid bar expands from both ends of strip, control is length of bar, smooth is fade time
 
-### Drawing
-30. Draw: Control sets draw pos. Fore is drawn into the strip at draw pos. Smoothing is palette pos to draw with.
-31. DrawFade: Same as Draw, but drawn pixels slowly fade back to back colour. Smoothing is fade time
-32. DrawScroll: Control sets draw pos. Fore is drawn into the strip at draw pos. Smoothing is scroll pos.
-33. DrawScrollFade: Control sets draw pos. Fore is drawn into the strip at draw pos. Smoothing is scroll pos. Fade time is fixed long.
+### Plotting
+30. Plot: Control sets plot pos. Fore is drawn into the strip at plot pos. Smoothing is palette pos to plot with.
+31. PlotFade: Same as Plot, but drawn pixels slowly fade back to back colour. Smoothing is fade time
+32. PlotScroll: Control sets plot pos. Fore is drawn into the strip at plot pos. Smoothing is scroll pos.
+33. PlotScrollFade: Control sets plot pos. Fore is drawn into the strip at plot pos. Smoothing is scroll pos. Fade time is fixed long.
+34. PlotFizzle: Same as Plot, but drawn pixels slowly fizzle back to back colour. Smoothing is fizzle time
 
 ### Line drawing
-40. Line: Same as Draw, but draw all pixels between last pos and new pos
-41. LineFade: Same as DrawFade but subsequent draw positions are connected not separate
-42. LineScroll: Same as DrawScroll, but draw all pixels between last pos and new pos
-42. LineScrollFade: Same as DrawScrollFade, but draw all pixels between last pos and new pos
+40. Line: Same as Plot, but plot all pixels between last pos and new pos
+41. LineFade: Same as PlotFade but subsequent plot positions are connected not separate
+42. LineScroll: Same as PlotScroll, but plot all pixels between last pos and new pos
+43. LineScrollFade: Same as PlotScrollFade, but plot all pixels between last pos and new pos
+44. LineFizzle: Same as PlotFizzle but subsequent plot positions are connected not separate
 
 
