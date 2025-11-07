@@ -4,24 +4,6 @@
 #include <Dmx_ESP32.h>
 #include "modes.h"
 
-/* TODO
-SOFTWARE
- DMX not working now :-/
- More modes
- More palettes
- Set DMX base channel and remember it: how to set? Web interface? Serial? DIPs? Buttons+display? How to remember?
- 3 SK6812 strips
-HARDWARE
- Project case
- USB port
- DMX passhrough connectors
- Large PSU
- 5 strip connectors
- 5 SK6812 strips
- Stands/mounting for strips
- Leads for strips
-*/
-
 // Hardware Definitions for ESP32 DMX Shield (UART2)
 #define DMX_UART_NUM  2
 #define DMX_RX_PIN    16 // UART2 Receive Pin
@@ -95,7 +77,7 @@ void loop() {
   if (Serial.available()) { parseSerial(controls1, Serial.readString()); }
 
   if (dmxReceive.hasUpdated()) {  // only read new values
-    parseDmx(control1, dmxStartChannel1);
+    parseDmx(controls1, dmxStartChannel1);
     // Serial.printf("DMX frame. Mode: %d Palette: %d Control: %.2f Smooth: %.2f\n", controls1.mode, controls1.palette, controls1.control, controls1.smooth);
   }
 

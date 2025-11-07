@@ -25,6 +25,7 @@ static float powerSmooth (float x, float p) {
 }
 
 static void fadePixel (const Controls& data, PixelStrip& strip, uint16_t idx, float fadeTime) {
+  // if (fadeTime < 0.25f) { fadeTime = (0.25f + 2.0f*fadeTime) * (float)(rand()%100) / 100.0f; } // Fizzle fade
   strip.pixels[idx] -= strip.dt / (fadeTime + 0.001f);
   limit(strip.pixels[idx]);
 }
@@ -67,7 +68,7 @@ static void scrollMode(const Controls& data, PixelStrip& strip) {
   scroll(data, strip);
 }
 
-// 2: Solid: Blend entire strip through the palette based on control, smoothing does nothing
+// 10: Solid: Blend entire strip through the palette based on control, smoothing does nothing
 static void solid(const Controls& data, PixelStrip& strip) {
   for (uint16_t i=0; i<strip.length; i++ ) {
     float pos = (float)i / (float)(strip.length-1);
@@ -78,7 +79,7 @@ static void solid(const Controls& data, PixelStrip& strip) {
   }
 }
 
-// 3: Gradient: control sets start palette position, smoothing sets end palette position, blend between the two
+// 11: Gradient: control sets start palette position, smoothing sets end palette position, blend between the two
 static void gradientMode(const Controls& data, PixelStrip& strip) {
   for (uint16_t i=0; i<strip.length; i++ ) {
     float pos = (float)i / (float)(strip.length-1);
@@ -86,7 +87,7 @@ static void gradientMode(const Controls& data, PixelStrip& strip) {
   }
 }
 
-// 4: Sine: Sine waves. Control is phase, smoothing is wavelength
+// 12: Sine: Sine waves. Control is phase, smoothing is wavelength
 static void sineMode(const Controls& data, PixelStrip& strip) {
   for (uint16_t i=0; i<strip.length; i++ ) {
     float pos = (float)i / (float)(strip.length-1);
@@ -95,7 +96,7 @@ static void sineMode(const Controls& data, PixelStrip& strip) {
   }
 }
 
-// 5: Noise: Perlin noise. Control is seed. Smoothing is scale and octaves
+// 13: Noise: Perlin noise. Control is seed. Smoothing is scale and octaves
 static void noiseMode(const Controls& data, PixelStrip& strip) {
   for (uint16_t i=0; i<strip.length; i++ ) {
     float pos = (float)i / (float)(strip.length-1);
@@ -133,7 +134,7 @@ static void midGradient(const Controls& data, PixelStrip& strip) {
   }
 }
 
-// 13: StartFade: solid bar rises from start of strip, control is length of bar, smooth is fade time
+// 15: StartFade: solid bar rises from start of strip, control is length of bar, smooth is fade time
 static void startFade(const Controls& data, PixelStrip& strip) {
   fadeAll(data, strip, data.smooth);
   for (uint16_t i=0; i<strip.length; i++ ) {
@@ -144,7 +145,7 @@ static void startFade(const Controls& data, PixelStrip& strip) {
   }
 }
 
-// 14: EndFade: solid bar falls from end of strip, control is length of bar, smooth is fade time
+// 16: EndFade: solid bar falls from end of strip, control is length of bar, smooth is fade time
 static void endFade(const Controls& data, PixelStrip& strip) {
   fadeAll(data, strip, data.smooth);
   for (uint16_t i=0; i<strip.length; i++ ) {
@@ -155,7 +156,7 @@ static void endFade(const Controls& data, PixelStrip& strip) {
   }
 }
 
-// 15: MidFade: solid bar expands from centre of strip, control is length of bar, smooth is fade time
+// 17: MidFade: solid bar expands from centre of strip, control is length of bar, smooth is fade time
 static void midFade(const Controls& data, PixelStrip& strip) {
   fadeAll(data, strip, data.smooth);
   for (uint16_t i=0; i<strip.length; i++ ) {
@@ -166,27 +167,27 @@ static void midFade(const Controls& data, PixelStrip& strip) {
   }
 }
 
-// 20: Draw: Control sets draw pos. Fore is drawn into the strip at draw pos. Smoothing is palette pos to draw with.
+// 30: Draw: Control sets draw pos. Fore is drawn into the strip at draw pos. Smoothing is palette pos to draw with.
 void draw(const Controls& data, PixelStrip& strip) {
   uint16_t drawIdx = data.control*strip.length;
   strip.pixels[drawIdx] = data.smooth;
 }
 
-// 21: DrawFade: Same as Draw, but drawn pixels slowly fade back to back colour. Smoothing is fade time
+// 31: DrawFade: Same as Draw, but drawn pixels slowly fade back to back colour. Smoothing is fade time
 void drawFade(const Controls& data, PixelStrip& strip) {
   fadeAll(data, strip, data.smooth);
   uint16_t drawIdx = data.control*strip.length;
   strip.pixels[drawIdx] = 1.0f;
 }
 
-// 22. DrawScroll: Control sets draw pos. Fore is drawn into the strip at draw pos. Smoothing is scroll pos.
+// 32. DrawScroll: Control sets draw pos. Fore is drawn into the strip at draw pos. Smoothing is scroll pos.
 void drawScroll(const Controls& data, PixelStrip& strip) {
   scroll(data, strip);
   uint16_t drawIdx = data.control*strip.length;
   strip.pixels[drawIdx] = 1.0f;
 }
 
-// 23. DrawScrollFade: Control sets draw pos. Fore is drawn into the strip at draw pos. Smoothing is scroll pos. Fade time is fixed long.
+// 33. DrawScrollFade: Control sets draw pos. Fore is drawn into the strip at draw pos. Smoothing is scroll pos. Fade time is fixed long.
 void drawScrollFade(const Controls& data, PixelStrip& strip) {
   fadeAll(data, strip, 1.0f);
   scroll(data, strip);
@@ -204,20 +205,20 @@ void updateStrip(const Controls& data, PixelStrip& strip, unsigned long timeNow)
   switch (mode) {
     case 0: fadeMode(data, strip); break;
     case 1: scrollMode(data, strip); break;
-    case 2: solid(data, strip); break;
-    case 3: gradientMode(data, strip); break;
-    case 4: sineMode(data, strip); break;
-    case 5: noiseMode(data, strip); break;
-    case 10: startGradient(data, strip); break;
-    case 11: endGradient(data, strip); break;
-    case 12: midGradient(data, strip); break;
-    case 13: startFade(data, strip); break;
-    case 14: endFade(data, strip); break;
-    case 15: midFade(data, strip); break;
-    case 20: draw(data, strip); break;
-    case 21: drawFade(data, strip); break;
-    case 22: drawScroll(data, strip); break;
-    case 23: drawScrollFade(data, strip); break;
+    case 10: solid(data, strip); break;
+    case 11: gradientMode(data, strip); break;
+    case 12: sineMode(data, strip); break;
+    case 13: noiseMode(data, strip); break;
+    case 20: startGradient(data, strip); break;
+    case 21: endGradient(data, strip); break;
+    case 22: midGradient(data, strip); break;
+    case 25: startFade(data, strip); break;
+    case 26: endFade(data, strip); break;
+    case 27: midFade(data, strip); break;
+    case 30: draw(data, strip); break;
+    case 31: drawFade(data, strip); break;
+    case 32: drawScroll(data, strip); break;
+    case 33: drawScrollFade(data, strip); break;
   }
   // Apply palette and set colours
   for (uint16_t i=0; i<strip.length; i++ ) {
