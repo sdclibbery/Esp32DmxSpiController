@@ -3,8 +3,10 @@ ESP32 based DMX controller for SPI LED strips
 
 ## TODO
 ### SOFTWARE
-* NEED drawline etc
+* NEED drawline etc modes
+* !! Everywhere that does *strip.length has an off by one error. 255 -> 1.0f -> (eg) idx 30 which is OFF THE END OF THE ARRAY
 * Try ways to improve the apparent dynamic range: apply power scaling when setting actual neopixel colours?
+* Fade range: no point going to zero, might want to go to more than 1s?
 * EndsGradient and EndsFade: opposite of mid
 * Fizzle fade modes
 * Want a mode to draw at end, with palette draw control, scrolling, and fixed fade (ticker/matrix mode)

@@ -58,6 +58,21 @@ static void scroll(const Controls& data, PixelStrip& strip) {
   }
 }
 
+static void drawLine(const Controls& data, PixelStrip& strip, float paletteDraw) {
+  uint16_t lastDrawIdx = strip.lastDrawPos*strip.length;
+  uint16_t drawIdx = data.control*strip.length;
+  if (drawIdx < lastDrawIdx) {
+    for (uint16_t i=drawIdx; i<=lastDrawIdx; i++ ) {
+      strip.pixels[i] = paletteDraw;
+    }
+  } else {
+    for (uint16_t i=lastDrawIdx; i<=drawIdx; i++ ) {
+      strip.pixels[i] = paletteDraw;
+    }
+  }
+  strip.lastDrawPos = data.control;
+}
+
 // 0: Fade: Whatever is currently showing, fade it down through the palette. Control does nothing, smooth is fade time.
 static void fadeMode(const Controls& data, PixelStrip& strip) {
   fadeAll(data, strip, data.smooth);
@@ -195,6 +210,30 @@ void plotScrollFade(const Controls& data, PixelStrip& strip) {
   strip.pixels[plotIdx] = 1.0f;
 }
 
+// 40: line: Same as Plot, but plot all pixels between last pos and new pos
+void line(const Controls& data, PixelStrip& strip) {
+  drawLine(data, strip, data.smooth);
+}
+
+// 41. LineFade: Same as PlotFade but subsequent plot positions are connected not separate
+void lineFade(const Controls& data, PixelStrip& strip) {
+  fadeAll(data, strip, data.smooth);
+  drawLine(data, strip, 1.0f);
+}
+
+// 42. LineScroll: Same as PlotScroll, but plot all pixels between last pos and new pos
+void lineScroll(const Controls& data, PixelStrip& strip) {
+  scroll(data, strip);
+  drawLine(data, strip, 1.0f);
+}
+
+// 43. LineScrollFade: Same as PlotScrollFade, but plot all pixels between last pos and new pos
+void lineScrollFade(const Controls& data, PixelStrip& strip) {
+  fadeAll(data, strip, 1.0f);
+  scroll(data, strip);
+  drawLine(data, strip, 1.0f);
+}
+
 void updateStrip(const Controls& data, PixelStrip& strip, unsigned long timeNow) {
   // Timing
   strip.dt = (float)(timeNow - strip.lastUpdateTime) / 1000000.0f; // delta time in seconds
@@ -203,22 +242,31 @@ void updateStrip(const Controls& data, PixelStrip& strip, unsigned long timeNow)
   // Apply mode and calculate new pixel scalar values
   uint8_t mode = data.mode;
   switch (mode) {
+    // Background
     case 0: fadeMode(data, strip); break;
     case 1: scrollMode(data, strip); break;
+    // Full strip
     case 10: solid(data, strip); break;
     case 11: gradientMode(data, strip); break;
     case 12: sineMode(data, strip); break;
     case 13: noiseMode(data, strip); break;
+    // Meter
     case 20: startGradient(data, strip); break;
     case 21: endGradient(data, strip); break;
     case 22: midGradient(data, strip); break;
     case 25: startFade(data, strip); break;
     case 26: endFade(data, strip); break;
     case 27: midFade(data, strip); break;
+    // Plotting
     case 30: plot(data, strip); break;
     case 31: plotFade(data, strip); break;
     case 32: plotScroll(data, strip); break;
     case 33: plotScrollFade(data, strip); break;
+    // Line drawing
+    case 40: line(data, strip); break;
+    case 41: lineFade(data, strip); break;
+    case 42: lineScroll(data, strip); break;
+    case 43: lineScrollFade(data, strip); break;
   }
   // Apply palette and set colours
   for (uint16_t i=0; i<strip.length; i++ ) {

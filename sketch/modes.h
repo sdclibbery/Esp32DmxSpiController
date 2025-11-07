@@ -19,6 +19,7 @@ struct PixelStrip {
   unsigned long lastUpdateTime;
   float dt;
   float lastScrollPos;
+  float lastDrawPos;
   void (*setPixel) (uint16_t index, Rgb color);
   PixelStrip (uint16_t _length, void (*_setPixel) (uint16_t index, Rgb color)) {
     length = _length;
@@ -28,6 +29,7 @@ struct PixelStrip {
     lastUpdateTime = 0;
     dt = 0.0f;
     lastScrollPos = 0.0f;
+    lastDrawPos = 0.0f;
   }
 };
 
