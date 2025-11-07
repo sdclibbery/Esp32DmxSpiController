@@ -49,7 +49,7 @@ void parseInput (Controls& controls, char* data) { // For testing
 int main () {
   unsigned long timeMs = 0;
   unsigned int frameIntervalMs = 10;
-  unsigned int numPixels = 30;
+  unsigned int numPixels = 32;
   char line[100];
   timeval timeval;
   char input_buffer[256] = {0};
