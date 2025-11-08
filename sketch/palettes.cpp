@@ -26,18 +26,18 @@ static Rgb palette3Way(const Rgb& a, const Rgb& b, const Rgb& c, float lerp) {
   }
 }
 
-static float mapChannel(float x) { return limit(x*x); } // Square. Not sure if this is gamma related, but it gives a much more linear appearance on the LEDs
-static Rgb map(const Rgb& colour) {
-  return Rgb( mapChannel(colour.red), mapChannel(colour.green), mapChannel(colour.blue) );
+static float gammaChannel(float x) { return limit(x*x); } // Gamma approximation. Gives much better visual linearity
+static Rgb gamma(const Rgb& colour) {
+  return Rgb( gammaChannel(colour.red), gammaChannel(colour.green), gammaChannel(colour.blue) );
 }
 
 Rgb palette(uint8_t type, const Rgb& back, const Rgb& fore, float lerp) {
   lerp = limit(lerp);
   switch (type) {
-    case 0: return map(blend(back, fore, lerp));
-    case 1: return map(palette3Way(off, back, fore, lerp));
-    case 2: return map(palette3Way(back, fore, off, lerp));
-    case 3: return map(palette3Way(back, off, fore, lerp));
+    case 0: return gamma(blend(back, fore, lerp));
+    case 1: return gamma(palette3Way(off, back, fore, lerp));
+    case 2: return gamma(palette3Way(back, fore, off, lerp));
+    case 3: return gamma(palette3Way(back, off, fore, lerp));
   }
   return off;
 }

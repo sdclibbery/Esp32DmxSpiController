@@ -25,7 +25,7 @@ void enable_non_blocking_input() {
     tcsetattr(STDIN_FILENO, TCSAFLUSH, &new_termios);
 }
 
-uint16_t pixelCount1 = 30;
+uint16_t pixelCount1 = 32;
 void setPixel1 (uint16_t index, Rgb color) {
     printf("\x1b[%d;%dH", 1, index*2);
     printf("\x1b[38;2;%d;%d;%dm\u2588\u2588\x1b[0m", (uint8_t)(color.red*255.0f), (uint8_t)(color.green*255.0f), (uint8_t)(color.blue*255.0f));

@@ -25,14 +25,23 @@ static float powerSmooth (float x, float p) {
 }
 
 static void fadePixel (const Controls& data, PixelStrip& strip, uint16_t idx, float fadeTime) {
-  // if (fadeTime < 0.25f) { fadeTime = (0.25f + 2.0f*fadeTime) * (float)(rand()%100) / 100.0f; } // Fizzle fade
   strip.pixels[idx] -= strip.dt / (fadeTime + 0.001f);
   limit(strip.pixels[idx]);
 }
-
 void fadeAll(const Controls& data, PixelStrip& strip, float fadeTime) {
   for (uint16_t i=0; i<strip.length; i++ ) {
     fadePixel(data, strip, i, fadeTime);
+  }
+}
+
+static void fizzlePixel (const Controls& data, PixelStrip& strip, uint16_t idx, float fizzleTime) {
+  fizzleTime = (0.25f + 2.0f*fizzleTime) * (float)(rand()%100) / 100.0f;
+  strip.pixels[idx] -= strip.dt / (fizzleTime + 0.001f);
+  limit(strip.pixels[idx]);
+}
+void fizzleAll(const Controls& data, PixelStrip& strip, float fizzleTime) {
+  for (uint16_t i=0; i<strip.length; i++ ) {
+    fizzlePixel(data, strip, i, fizzleTime);
   }
 }
 
@@ -81,6 +90,11 @@ static void fadeMode(const Controls& data, PixelStrip& strip) {
 // 1. Scroll: Scroll whatever is currently showing. Control does nothing, smooth is scroll pos.
 static void scrollMode(const Controls& data, PixelStrip& strip) {
   scroll(data, strip);
+}
+
+// 2: Fizzle: Whatever is currently showing, fizzle it down through the palette. Control does nothing, smooth is fade time.
+static void fizzleMode(const Controls& data, PixelStrip& strip) {
+  fizzleAll(data, strip, data.smooth);
 }
 
 // 10: Solid: Blend entire strip through the palette based on control, smoothing does nothing
@@ -149,7 +163,7 @@ static void midGradient(const Controls& data, PixelStrip& strip) {
   }
 }
 
-// 25: StartFade: solid bar rises from start of strip, control is length of bar, smooth is fade time
+// 30: StartFade: solid bar rises from start of strip, control is length of bar, smooth is fade time
 static void startFade(const Controls& data, PixelStrip& strip) {
   fadeAll(data, strip, data.smooth);
   for (uint16_t i=0; i<strip.length; i++ ) {
@@ -160,7 +174,7 @@ static void startFade(const Controls& data, PixelStrip& strip) {
   }
 }
 
-// 26: EndFade: solid bar falls from end of strip, control is length of bar, smooth is fade time
+// 31: EndFade: solid bar falls from end of strip, control is length of bar, smooth is fade time
 static void endFade(const Controls& data, PixelStrip& strip) {
   fadeAll(data, strip, data.smooth);
   for (uint16_t i=0; i<strip.length; i++ ) {
@@ -171,7 +185,7 @@ static void endFade(const Controls& data, PixelStrip& strip) {
   }
 }
 
-// 27: MidFade: solid bar expands from centre of strip, control is length of bar, smooth is fade time
+// 32: MidFade: solid bar expands from centre of strip, control is length of bar, smooth is fade time
 static void midFade(const Controls& data, PixelStrip& strip) {
   fadeAll(data, strip, data.smooth);
   for (uint16_t i=0; i<strip.length; i++ ) {
@@ -182,20 +196,53 @@ static void midFade(const Controls& data, PixelStrip& strip) {
   }
 }
 
-// 30: plot: Control sets plot pos. Fore is drawn into the strip at plot pos. Smoothing is palette pos to plot with.
+// 40: StartFizzle: solid bar rises from start of strip, control is length of bar, smooth is fizzle time
+static void startFizzle(const Controls& data, PixelStrip& strip) {
+  fizzleAll(data, strip, data.smooth);
+  for (uint16_t i=0; i<strip.length; i++ ) {
+    float pos = (float)i / (float)(strip.length-1);
+    if (pos <= data.control) {
+      strip.pixels[i] = 1.0f;
+    }
+  }
+}
+
+// 41: EndFizzle: solid bar falls from end of strip, control is length of bar, smooth is fizzle time
+static void endFizzle(const Controls& data, PixelStrip& strip) {
+  fizzleAll(data, strip, data.smooth);
+  for (uint16_t i=0; i<strip.length; i++ ) {
+    float pos = (float)i / (float)(strip.length-1);
+    if (pos > 1.0f - data.control) {
+      strip.pixels[i] = 1.0f;
+    }
+  }
+}
+
+// 42: MidFizzle: solid bar expands from centre of strip, control is length of bar, smooth is fizzle time
+static void midFizzle(const Controls& data, PixelStrip& strip) {
+  fizzleAll(data, strip, data.smooth);
+  for (uint16_t i=0; i<strip.length; i++ ) {
+    float pos = (float)i / (float)(strip.length-1);
+    if (std::abs(0.5f - pos)*2.0f <= data.control) {
+      strip.pixels[i] = 1.0f;
+    }
+  }
+}
+
+// 50: plot: Control sets plot pos. Fore is drawn into the strip at plot pos. Smoothing is palette pos to plot with.
 void plot(const Controls& data, PixelStrip& strip) {
   uint16_t plotIdx = data.control*(strip.length-1);
   strip.pixels[plotIdx] = data.smooth;
 }
 
-// 31: plotFade: Same as plot, but drawn pixels slowly fade back to back colour. Smoothing is fade time
+// 51: plotFade: Same as plot, but drawn pixels slowly fade back to back colour. Smoothing is fade time
 void plotFade(const Controls& data, PixelStrip& strip) {
   fadeAll(data, strip, data.smooth);
   uint16_t plotIdx = data.control*(strip.length-1);
   strip.pixels[plotIdx] = 1.0f;
 }
 
-// 32. plotScrollFade: Control sets plot pos. Fore is drawn into the strip at plot pos. Smoothing is scroll pos. Fade time is fixed long.
+// 52. plotScrollFade: Control sets plot pos. Fore is drawn into the strip at plot pos. Smoothing is scroll pos. Fade time is fixed long.
 void plotScrollFade(const Controls& data, PixelStrip& strip) {
   fadeAll(data, strip, 1.0f);
   scroll(data, strip);
@@ -203,22 +250,52 @@ void plotScrollFade(const Controls& data, PixelStrip& strip) {
   strip.pixels[plotIdx] = 1.0f;
 }
 
-// 40: line: Same as Plot, but plot all pixels between last pos and new pos
+// 60: line: Same as Plot, but plot all pixels between last pos and new pos
 void line(const Controls& data, PixelStrip& strip) {
   drawLine(data, strip, data.smooth);
 }
 
-// 41. LineFade: Same as PlotFade but subsequent plot positions are connected not separate
+// 61. LineFade: Same as PlotFade but subsequent plot positions are connected not separate
 void lineFade(const Controls& data, PixelStrip& strip) {
   fadeAll(data, strip, data.smooth);
   drawLine(data, strip, 1.0f);
 }
 
-// 42. LineScrollFade: Same as PlotScrollFade, but plot all pixels between last pos and new pos
+// 62. LineScrollFade: Same as PlotScrollFade, but plot all pixels between last pos and new pos
 void lineScrollFade(const Controls& data, PixelStrip& strip) {
   fadeAll(data, strip, 1.0f);
   scroll(data, strip);
   drawLine(data, strip, 1.0f);
+}
+
+// 70. StartTicker: Control sets palette entry to draw at start of strip. Smoothing is scroll pos
+static void startTicker(const Controls& data, PixelStrip& strip) {
+  strip.pixels[0] = data.control;
+  scroll(data, strip);
+}
+
+// 71. EndTicker: Control sets palette entry to draw at end of strip. Smoothing is scroll pos
+static void endTicker(const Controls& data, PixelStrip& strip) {
+  strip.pixels[strip.length-1] = data.control;
+  scroll(data, strip);
+}
+
+// 72. MidTicker: Control sets palette entry to draw at mid of strip. Smoothing is scroll pos, but moving out both ways
+
+// 73. EndsTicker: Control sets palette entry to draw at both ends of strip. Smoothing is scroll pos, but moving in both ways
+
+// 80. StartTicker: Control sets palette entry to draw at start of strip. Smoothing is scroll pos
+static void startTickerFade(const Controls& data, PixelStrip& strip) {
+  fadeAll(data, strip, 1.0f);
+  strip.pixels[0] = data.control;
+  scroll(data, strip);
+}
+
+// 81. EndTicker: Control sets palette entry to draw at end of strip. Smoothing is scroll pos
+static void endTickerFade(const Controls& data, PixelStrip& strip) {
+  fadeAll(data, strip, 1.0f);
+  strip.pixels[strip.length-1] = data.control;
+  scroll(data, strip);
 }
 
 void updateStrip(const Controls& data, PixelStrip& strip, unsigned long timeNow) {
@@ -232,26 +309,40 @@ void updateStrip(const Controls& data, PixelStrip& strip, unsigned long timeNow)
     // Background
     case 0: fadeMode(data, strip); break;
     case 1: scrollMode(data, strip); break;
+    case 2: fizzleMode(data, strip); break;
     // Full strip
     case 10: solid(data, strip); break;
     case 11: gradientMode(data, strip); break;
     case 12: sineMode(data, strip); break;
     case 13: noiseMode(data, strip); break;
-    // Meter
+    // Meter gradient
     case 20: startGradient(data, strip); break;
     case 21: endGradient(data, strip); break;
     case 22: midGradient(data, strip); break;
-    case 25: startFade(data, strip); break;
-    case 26: endFade(data, strip); break;
-    case 27: midFade(data, strip); break;
+    // Meter fade
+    case 30: startFade(data, strip); break;
+    case 31: endFade(data, strip); break;
+    case 32: midFade(data, strip); break;
+    // Meter fizzle
+    case 40: startFizzle(data, strip); break;
+    case 41: endFizzle(data, strip); break;
+    case 42: midFizzle(data, strip); break;
     // Plotting
-    case 30: plot(data, strip); break;
-    case 31: plotFade(data, strip); break;
-    case 32: plotScrollFade(data, strip); break;
+    case 50: plot(data, strip); break;
+    case 51: plotFade(data, strip); break;
+    case 52: plotScrollFade(data, strip); break;
     // Line drawing
-    case 40: line(data, strip); break;
-    case 41: lineFade(data, strip); break;
-    case 42: lineScrollFade(data, strip); break;
+    case 60: line(data, strip); break;
+    case 61: lineFade(data, strip); break;
+    case 62: lineScrollFade(data, strip); break;
+    // Ticker
+    case 70: startTicker(data, strip); break;
+    case 71: endTicker(data, strip); break;
+    // case 72: midTicker(data, strip); break;
+    // case 73: endsTicker(data, strip); break;
+    // TickerFade
+    case 80: startTickerFade(data, strip); break;
+    case 81: endTickerFade(data, strip); break;
   }
   // Apply palette and set colours
   for (uint16_t i=0; i<strip.length; i++ ) {
