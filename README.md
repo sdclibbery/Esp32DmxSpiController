@@ -3,9 +3,8 @@ ESP32 based DMX controller for SPI LED strips
 
 ## TODO
 ### SOFTWARE
-* plotScroll lineScroll DO NOT MAKE SENSE because they plot with 1.0f and never darken anything
- * Have to remove and replace with:
- * Want a mode to draw at end, with palette draw control, scrolling, and fixed fade (ticker/matrix mode)
+* Want a mode to draw at end, with palette draw control, scrolling, and fixed fade (ticker/matrix mode)
+ * TickerStart, TickerEnd, TickerMid, TickerEnds
 * Fizzle fade modes
 * EndsGradient and EndsFade: opposite of mid
 * Fade range: no point going to zero fade time, might want to go to more than 1s?
@@ -73,14 +72,12 @@ Dmx_ESP32 https://github.com/devarishi7/Dmx_ESP32
 ### Plotting
 30. Plot: Control sets plot pos. Fore is drawn into the strip at plot pos. Smoothing is palette pos to plot with.
 31. PlotFade: Same as Plot, but drawn pixels slowly fade back to back colour. Smoothing is fade time
-32. PlotScroll: Control sets plot pos. Fore is drawn into the strip at plot pos. Smoothing is scroll pos.
-33. PlotScrollFade: Control sets plot pos. Fore is drawn into the strip at plot pos. Smoothing is scroll pos. Fade time is fixed long.
-34. PlotFizzle: Same as Plot, but drawn pixels slowly fizzle back to back colour. Smoothing is fizzle time
+32. PlotScrollFade: Control sets plot pos. Fore is drawn into the strip at plot pos. Smoothing is scroll pos. Fade time is fixed long.
+33. PlotFizzle: Same as Plot, but drawn pixels slowly fizzle back to back colour. Smoothing is fizzle time
 
 ### Line drawing
 40. Line: Same as Plot, but plot all pixels between last pos and new pos
 41. LineFade: Same as PlotFade but subsequent plot positions are connected not separate
-42. LineScroll: Same as PlotScroll, but plot all pixels between last pos and new pos
-43. LineScrollFade: Same as PlotScrollFade, but plot all pixels between last pos and new pos
-44. LineFizzle: Same as PlotFizzle but subsequent plot positions are connected not separate
+42. LineScrollFade: Same as PlotScrollFade, but plot all pixels between last pos and new pos
+43. LineFizzle: Same as PlotFizzle but subsequent plot positions are connected not separate
 

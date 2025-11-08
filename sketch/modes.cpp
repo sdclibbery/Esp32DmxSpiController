@@ -195,14 +195,7 @@ void plotFade(const Controls& data, PixelStrip& strip) {
   strip.pixels[plotIdx] = 1.0f;
 }
 
-// 32. plotScroll: Control sets plot pos. Fore is drawn into the strip at plot pos. Smoothing is scroll pos.
-void plotScroll(const Controls& data, PixelStrip& strip) {
-  scroll(data, strip);
-  uint16_t plotIdx = data.control*(strip.length-1);
-  strip.pixels[plotIdx] = 1.0f;
-}
-
-// 33. plotScrollFade: Control sets plot pos. Fore is drawn into the strip at plot pos. Smoothing is scroll pos. Fade time is fixed long.
+// 32. plotScrollFade: Control sets plot pos. Fore is drawn into the strip at plot pos. Smoothing is scroll pos. Fade time is fixed long.
 void plotScrollFade(const Controls& data, PixelStrip& strip) {
   fadeAll(data, strip, 1.0f);
   scroll(data, strip);
@@ -221,13 +214,7 @@ void lineFade(const Controls& data, PixelStrip& strip) {
   drawLine(data, strip, 1.0f);
 }
 
-// 42. LineScroll: Same as PlotScroll, but plot all pixels between last pos and new pos
-void lineScroll(const Controls& data, PixelStrip& strip) {
-  scroll(data, strip);
-  drawLine(data, strip, 1.0f);
-}
-
-// 43. LineScrollFade: Same as PlotScrollFade, but plot all pixels between last pos and new pos
+// 42. LineScrollFade: Same as PlotScrollFade, but plot all pixels between last pos and new pos
 void lineScrollFade(const Controls& data, PixelStrip& strip) {
   fadeAll(data, strip, 1.0f);
   scroll(data, strip);
@@ -260,13 +247,11 @@ void updateStrip(const Controls& data, PixelStrip& strip, unsigned long timeNow)
     // Plotting
     case 30: plot(data, strip); break;
     case 31: plotFade(data, strip); break;
-    case 32: plotScroll(data, strip); break;
-    case 33: plotScrollFade(data, strip); break;
+    case 32: plotScrollFade(data, strip); break;
     // Line drawing
     case 40: line(data, strip); break;
     case 41: lineFade(data, strip); break;
-    case 42: lineScroll(data, strip); break;
-    case 43: lineScrollFade(data, strip); break;
+    case 42: lineScrollFade(data, strip); break;
   }
   // Apply palette and set colours
   for (uint16_t i=0; i<strip.length; i++ ) {
