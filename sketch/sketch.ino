@@ -24,9 +24,9 @@ typedef NeoPixelBus<NeoGrbFeature, NeoEsp32I2s1X8Ws2812xMethod> NeoPixelStrip;
 const uint16_t pixelCount1 = 30;
 const uint16_t dmxStartChannel1 = 1;
 NeoPixelStrip neoStrip1(pixelCount1, LED_DATA0);
-void setPixel1 (uint16_t index, Rgb color) { neoStrip1.SetPixelColor(index, RgbColor(color.red, color.green, color.blue)); }
+void setPixel1 (uint16_t index, Rgb color) { neoStrip1.SetPixelColor(index, RgbColor(color.red*255, color.green*255, color.blue*255)); }
 PixelStrip pixelStrip1(pixelCount1, setPixel1);
-Controls controls1(Rgb(0,0,4),Rgb(8,0,0));
+Controls controls1(Rgb(0,0,0.1f),Rgb(0.2f,0,0));
 
 static void parseSerial (Controls& controls, String data) { // For testing
   Serial.println(data);
@@ -34,12 +34,12 @@ static void parseSerial (Controls& controls, String data) { // For testing
   if (data.startsWith("p")) { controls.palette = data.substring(1).toInt(); }
   if (data.startsWith("c")) { controls.control = ((float)data.substring(1).toInt())/255; }
   if (data.startsWith("s")) { controls.smooth = ((float)data.substring(1).toInt())/255; }
-  if (data.startsWith("r")) { controls.back.red = data.substring(1).toInt(); }
-  if (data.startsWith("g")) { controls.back.green = data.substring(1).toInt(); }
-  if (data.startsWith("b")) { controls.back.blue = data.substring(1).toInt(); }
-  if (data.startsWith("R")) { controls.fore.red = data.substring(1).toInt(); }
-  if (data.startsWith("G")) { controls.fore.green = data.substring(1).toInt(); }
-  if (data.startsWith("B")) { controls.fore.blue = data.substring(1).toInt(); }
+  if (data.startsWith("r")) { controls.back.red = ((float)data.substring(1).toInt())/255; }
+  if (data.startsWith("g")) { controls.back.green = ((float)data.substring(1).toInt())/255; }
+  if (data.startsWith("b")) { controls.back.blue = ((float)data.substring(1).toInt())/255; }
+  if (data.startsWith("R")) { controls.fore.red = ((float)data.substring(1).toInt())/255; }
+  if (data.startsWith("G")) { controls.fore.green = ((float)data.substring(1).toInt())/255; }
+  if (data.startsWith("B")) { controls.fore.blue = ((float)data.substring(1).toInt())/255; }
 }
 
 static void parseDmx (Controls& controls, const uint16_t dmxStartChannel) {
@@ -47,12 +47,12 @@ static void parseDmx (Controls& controls, const uint16_t dmxStartChannel) {
   controls.palette = dmxReceive.read(dmxStartChannel + 1);
   controls.control = ((float)dmxReceive.read(dmxStartChannel + 2))/255;
   controls.smooth = ((float)dmxReceive.read(dmxStartChannel + 3))/255;
-  controls.back.red = dmxReceive.read(dmxStartChannel + 4);
-  controls.back.green = dmxReceive.read(dmxStartChannel + 5);
-  controls.back.blue = dmxReceive.read(dmxStartChannel + 6);
-  controls.fore.red = dmxReceive.read(dmxStartChannel + 7);
-  controls.fore.green = dmxReceive.read(dmxStartChannel + 8);
-  controls.fore.blue = dmxReceive.read(dmxStartChannel + 9);
+  controls.back.red = ((float)dmxReceive.read(dmxStartChannel + 4))/255;
+  controls.back.green = ((float)dmxReceive.read(dmxStartChannel + 5))/255;
+  controls.back.blue = ((float)dmxReceive.read(dmxStartChannel + 6))/255;
+  controls.fore.red = ((float)dmxReceive.read(dmxStartChannel + 7))/255;
+  controls.fore.green = ((float)dmxReceive.read(dmxStartChannel + 8))/255;
+  controls.fore.blue = ((float)dmxReceive.read(dmxStartChannel + 9))/255;
 }
 
 void setup() {

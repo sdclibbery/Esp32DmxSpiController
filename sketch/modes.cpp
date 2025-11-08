@@ -120,7 +120,7 @@ static void noiseMode(const Controls& data, PixelStrip& strip) {
   }
 }
 
-// 10: StartGradient: solid bar rises from start of strip, control is length of bar, smooth is lerp power in rest of strip
+// 20: StartGradient: solid bar rises from start of strip, control is length of bar, smooth is lerp power in rest of strip
 static void startGradient(const Controls& data, PixelStrip& strip) {
   for (uint16_t i=0; i<strip.length; i++ ) {
     float lerp = (float)i / (float)(strip.length-1); // Position along strip
@@ -129,7 +129,7 @@ static void startGradient(const Controls& data, PixelStrip& strip) {
   }
 }
 
-// 11: EndGradient: solid bar falls from end of strip, control is length of bar, smooth is lerp power in rest of strip
+// 21: EndGradient: solid bar falls from end of strip, control is length of bar, smooth is lerp power in rest of strip
 static void endGradient(const Controls& data, PixelStrip& strip) {
   for (uint16_t i=0; i<strip.length; i++ ) {
     float lerp = (float)i / (float)(strip.length-1); // Position along strip
@@ -139,7 +139,7 @@ static void endGradient(const Controls& data, PixelStrip& strip) {
   }
 }
 
-// 12: MidGradient: solid bar expands from centre of strip, control is length of bar, smooth is lerp power in rest of strip
+// 22: MidGradient: solid bar expands from centre of strip, control is length of bar, smooth is lerp power in rest of strip
 static void midGradient(const Controls& data, PixelStrip& strip) {
   for (uint16_t i=0; i<strip.length; i++ ) {
     float lerp = (float)i / (float)(strip.length-1); // Position along strip
@@ -149,7 +149,7 @@ static void midGradient(const Controls& data, PixelStrip& strip) {
   }
 }
 
-// 15: StartFade: solid bar rises from start of strip, control is length of bar, smooth is fade time
+// 25: StartFade: solid bar rises from start of strip, control is length of bar, smooth is fade time
 static void startFade(const Controls& data, PixelStrip& strip) {
   fadeAll(data, strip, data.smooth);
   for (uint16_t i=0; i<strip.length; i++ ) {
@@ -160,7 +160,7 @@ static void startFade(const Controls& data, PixelStrip& strip) {
   }
 }
 
-// 16: EndFade: solid bar falls from end of strip, control is length of bar, smooth is fade time
+// 26: EndFade: solid bar falls from end of strip, control is length of bar, smooth is fade time
 static void endFade(const Controls& data, PixelStrip& strip) {
   fadeAll(data, strip, data.smooth);
   for (uint16_t i=0; i<strip.length; i++ ) {
@@ -171,7 +171,7 @@ static void endFade(const Controls& data, PixelStrip& strip) {
   }
 }
 
-// 17: MidFade: solid bar expands from centre of strip, control is length of bar, smooth is fade time
+// 27: MidFade: solid bar expands from centre of strip, control is length of bar, smooth is fade time
 static void midFade(const Controls& data, PixelStrip& strip) {
   fadeAll(data, strip, data.smooth);
   for (uint16_t i=0; i<strip.length; i++ ) {

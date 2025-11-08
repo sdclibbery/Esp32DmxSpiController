@@ -1,11 +1,11 @@
 #pragma once
 
 struct Rgb {
-  uint8_t red;
-  uint8_t green;
-  uint8_t blue;
-  Rgb () { red=0; green=0; blue=0; }
-  Rgb (uint8_t _red, uint8_t _green, uint8_t _blue) {
+  float red;
+  float green;
+  float blue;
+  Rgb () { red=0.0f; green=0.0f; blue=0.0f; }
+  Rgb (float _red, float _green, float _blue) {
     red = _red;
     green = _green;
     blue = _blue;
@@ -20,8 +20,8 @@ struct PixelStrip {
   float dt;
   float lastScrollPos;
   float lastDrawPos;
-  void (*setPixel) (uint16_t index, Rgb color);
-  PixelStrip (uint16_t _length, void (*_setPixel) (uint16_t index, Rgb color)) {
+  void (*setPixel) (uint16_t index, Rgb colour);
+  PixelStrip (uint16_t _length, void (*_setPixel) (uint16_t index, Rgb colour)) {
     length = _length;
     pixels = new float[length] {};
     lastPixels = new float[length] {};
