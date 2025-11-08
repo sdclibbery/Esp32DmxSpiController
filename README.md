@@ -3,10 +3,7 @@ ESP32 based DMX controller for SPI LED strips
 
 ## TODO
 ### SOFTWARE
-* plot/line fizzle modes
-* Ticker mid/ends
-* EndsGradient, EndsFade and EndsFizzle: opposite of mid
-* Fade range: no point going to zero fade time, and might want to go to more than 1s? Just add 1/4??
+* Ticker mid/ends, and ticker fade mid/ends
 * ? Blur (diffuse and slight fade): own mode and for more plot/line modes
 * More modes
 * More palettes
