@@ -28,22 +28,22 @@ void enable_non_blocking_input() {
 uint16_t pixelCount1 = 30;
 void setPixel1 (uint16_t index, Rgb color) {
     printf("\x1b[%d;%dH", 1, index*2);
-    printf("\x1b[38;2;%d;%d;%dm\u2588\u2588\x1b[0m", color.red, color.green, color.blue);
+    printf("\x1b[38;2;%d;%d;%dm\u2588\u2588\x1b[0m", (uint8_t)(color.red*255.0f), (uint8_t)(color.green*255.0f), (uint8_t)(color.blue*255.0f));
 }
 PixelStrip pixelStrip1(pixelCount1, setPixel1);
-Controls controls1(Rgb(0,0,160),Rgb(255,255,255));
+Controls controls1(Rgb(0.0f,0.0f,0.6f),Rgb(1.0f,1.0f,1.0f));
 
 void parseInput (Controls& controls, char* data) { // For testing
   if (data[0] == 'm') { controls.mode = atoi(&data[1]); }
   if (data[0] == 'p') { controls.palette = atoi(&data[1]); }
   if (data[0] == 'c') { controls.control = ((float)atoi(&data[1]))/255; }
   if (data[0] == 's') { controls.smooth = ((float)atoi(&data[1]))/255; }
-  if (data[0] == 'r') { controls.back.red = atoi(&data[1]); }
-  if (data[0] == 'g') { controls.back.green = atoi(&data[1]); }
-  if (data[0] == 'b') { controls.back.blue = atoi(&data[1]); }
-  if (data[0] == 'R') { controls.fore.red = atoi(&data[1]); }
-  if (data[0] == 'G') { controls.fore.green = atoi(&data[1]); }
-  if (data[0] == 'B') { controls.fore.blue = atoi(&data[1]); }
+  if (data[0] == 'r') { controls.back.red = ((float)atoi(&data[1]))/255; }
+  if (data[0] == 'g') { controls.back.green = ((float)atoi(&data[1]))/255; }
+  if (data[0] == 'b') { controls.back.blue = ((float)atoi(&data[1]))/255; }
+  if (data[0] == 'R') { controls.fore.red = ((float)atoi(&data[1]))/255; }
+  if (data[0] == 'G') { controls.fore.green = ((float)atoi(&data[1]))/255; }
+  if (data[0] == 'B') { controls.fore.blue = ((float)atoi(&data[1]))/255; }
 }
 
 int main () {

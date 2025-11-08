@@ -7,9 +7,8 @@ ESP32 based DMX controller for SPI LED strips
  * Have to remove and replace with:
  * Want a mode to draw at end, with palette draw control, scrolling, and fixed fade (ticker/matrix mode)
 * Fizzle fade modes
-* Fade range: no point going to zero fade time, might want to go to more than 1s?
 * EndsGradient and EndsFade: opposite of mid
-* Want palette off->red->rainbow->pink
+* Fade range: no point going to zero fade time, might want to go to more than 1s?
 * Blur (diffuse and slight fade): own mode and for more plot/line modes
 * More modes
 * More palettes
@@ -43,7 +42,7 @@ Dmx_ESP32 https://github.com/devarishi7/Dmx_ESP32
 2. BFO: lerp from back to fore to off (black)
 3. BOF: lerp from back to off (black) to fore
 ... OFB for flames :-p
-...asymmetric, rainbow, rotating, with white, with rainbow in, OBFO etc...
+...asymmetric, rainbow, off->rainbow(red->pink), rotating, with white, with rainbow in, OBFO etc...
 ...BFBFBF, black body, oil, neon, flame, sunset etc
 ...Modes that interpolate in gamma space? or hsv? or lablch? or all should???
 
