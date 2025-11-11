@@ -393,6 +393,8 @@ void updateStrip(const Controls& data, PixelStrip& strip, unsigned long timeNow)
     // TickerFade
     case 80: startTickerFade(data, strip); break;
     case 81: endTickerFade(data, strip); break;
+    // case 82: midTickerFade(data, strip); break;
+    // case 83: endsTickerFade(data, strip); break;
   }
   // Apply palette and set colours
   for (uint16_t i=0; i<strip.length; i++ ) {

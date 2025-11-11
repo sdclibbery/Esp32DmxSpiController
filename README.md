@@ -5,6 +5,7 @@ ESP32 based DMX controller for SPI LED strips
 ### SOFTWARE
 * Ticker mid/ends, and ticker fade mid/ends
 * ? Blur (diffuse and slight fade): own mode and for more plot/line modes
+* ? Control usage for fade/fizzle background modes
 * More modes
 * More palettes
 * Set DMX base channel and remember it: how to set? Web interface? Serial? DIPs? Buttons+display? How to remember?
@@ -34,12 +35,19 @@ Dmx_ESP32 https://github.com/devarishi7/Dmx_ESP32
 ## Palettes
 0. BF: lerp from back colour to fore colour
 1. OBF: lerp from off (black) to back to fore
-2. BFO: lerp from back to fore to off (black)
-3. BOF: lerp from back to off (black) to fore
-... OFB for flames :-p
-...asymmetric, rainbow, off->rainbow(red->pink), with white, with rainbow in, OBFO etc...
-...BFBFBF, black body, oil, neon, flame, sunset etc
-...Modes that interpolate in gamma space? or hsv? or lablch? or all should???
+2. BFO
+3. BOF
+4. OFB
+10. BFBF
+11. BFBFBF
+20. R: rainbow red -> magenta
+21. BR
+22. BRF
+30. Black body
+31. Oil
+32. Neon
+33. Flame
+34. Heatmap/sunset
 
 ## Modes
 ### Background
