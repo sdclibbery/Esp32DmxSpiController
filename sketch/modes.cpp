@@ -35,7 +35,7 @@ void fadeAll(const Controls& data, PixelStrip& strip, float fadeTime) {
 }
 
 static void fizzlePixel (const Controls& data, PixelStrip& strip, uint16_t idx, float fizzleTime) {
-  fizzleTime = (0.25f + 2.0f*fizzleTime) * (float)(rand()%100) / 100.0f;
+  fizzleTime = (0.25f + 2.0f*fizzleTime) * (float)(rand()%1000) / 1000.0f;
   strip.pixels[idx] -= strip.dt / (fizzleTime + 0.001f);
   limit(strip.pixels[idx]);
 }
@@ -87,14 +87,14 @@ static void fadeMode(const Controls& data, PixelStrip& strip) {
   fadeAll(data, strip, data.smooth);
 }
 
-// 1. Scroll: Scroll whatever is currently showing. Control does nothing, smooth is scroll pos.
-static void scrollMode(const Controls& data, PixelStrip& strip) {
-  scroll(data, strip);
-}
-
-// 2: Fizzle: Whatever is currently showing, fizzle it down through the palette. Control does nothing, smooth is fade time.
+// 1: Fizzle: Whatever is currently showing, fizzle it down through the palette. Control does nothing, smooth is fade time.
 static void fizzleMode(const Controls& data, PixelStrip& strip) {
   fizzleAll(data, strip, data.smooth);
+}
+
+// 2. Scroll: Scroll whatever is currently showing. Control does nothing, smooth is scroll pos.
+static void scrollMode(const Controls& data, PixelStrip& strip) {
+  scroll(data, strip);
 }
 
 // 10: Solid: Blend entire strip through the palette based on control, smoothing does nothing
@@ -353,8 +353,8 @@ void updateStrip(const Controls& data, PixelStrip& strip, unsigned long timeNow)
   switch (mode) {
     // Background
     case 0: fadeMode(data, strip); break;
-    case 1: scrollMode(data, strip); break;
-    case 2: fizzleMode(data, strip); break;
+    case 1: fizzleMode(data, strip); break;
+    case 2: scrollMode(data, strip); break;
     // Full strip
     case 10: solid(data, strip); break;
     case 11: gradientMode(data, strip); break;

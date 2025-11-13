@@ -3,17 +3,18 @@ ESP32 based DMX controller for SPI LED strips
 
 ## TODO
 ### SOFTWARE
+* ? Control usage for fade/fizzle background modes
 * Ticker mid/ends, and ticker fade mid/ends
 * ? Blur (diffuse and slight fade): own mode and for more plot/line modes
  ??Maybe just a single droplets mode??
-* ? Control usage for fade/fizzle background modes
 * More modes
 * More palettes
-* Set DMX base channel and remember it: how to set? Web interface? Serial? DIPs? Buttons+display? How to remember?
+* Set DMX base channel from DIP switches
 * Support for 3 strips
 ### HARDWARE
 * Project case
 * DMX passhrough connectors
+* DMX channel DIP switches - 4 switches to select bank of 32 channels
 * Large PSU
 * 5 strip connectors
 * 5 SK6812 strips ?? Or just stick with ws2812b??
@@ -54,9 +55,9 @@ Dmx_ESP32 https://github.com/devarishi7/Dmx_ESP32
 ### Background
 0. Fade: Whatever is currently showing, fade it down through the palette. Control does nothing, smooth is fade time.
  ??? control should set target palette position, and it fades to that?
-1. Scroll: Scroll whatever is currently showing. Control does nothing, smooth is scroll pos.
-2. Fizzle: Whatever is currently showing, fizzle it down through the palette. Control does nothing, smooth is fizzle time.
+1. Fizzle: Whatever is currently showing, fizzle it down through the palette. Control does nothing, smooth is fizzle time.
  ??? control should set target palette position, and it fizzles to that?
+2. Scroll: Scroll whatever is currently showing. Control does nothing, smooth is scroll pos.
 
 ### Full strip
 10. Solid: Blend entire strip through the palette based on control, smoothing applies a curved palette profile
