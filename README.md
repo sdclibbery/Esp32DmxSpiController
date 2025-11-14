@@ -3,10 +3,9 @@ ESP32 based DMX controller for SPI LED strips
 
 ## TODO
 ### SOFTWARE
-* ? Control usage for fade/fizzle background modes
-* Ticker mid/ends, and ticker fade mid/ends
 * ? Blur (diffuse and slight fade): own mode and for more plot/line modes
  ??Maybe just a single droplets mode??
+* ? Control usage for fade/fizzle background modes
 * More modes
 * More palettes
 * Set DMX base channel from DIP switches

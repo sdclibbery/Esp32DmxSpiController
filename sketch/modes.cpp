@@ -67,6 +67,24 @@ static void scroll(const Controls& data, PixelStrip& strip) {
   }
 }
 
+static void biScroll(const Controls& data, PixelStrip& strip, float direction=1.0f) {
+  float scrollDelta = (data.smooth - strip.lastScrollPos)*direction;
+  if (scrollDelta > 0.5f) { scrollDelta -= 1.0f; }
+  if (scrollDelta < -0.5f) { scrollDelta += 1.0f; }
+  // If scrollDelta is small this frame, accumulate it
+  int16_t scrollSteps = (int16_t)(scrollDelta * (strip.length-1));
+  if (scrollSteps != 0) {
+    for (uint16_t i=0; i<strip.length; i++ ) {
+      if (i < strip.length/2) {
+        strip.pixels[i] = strip.lastPixels[(strip.length + i - scrollSteps) % strip.length];
+      } else {
+        strip.pixels[i] = strip.lastPixels[(strip.length + i + scrollSteps) % strip.length];
+      }
+    }
+    strip.lastScrollPos = data.smooth; // Only set when actually scrolled so that slow scrolling works
+  }
+}
+
 static void drawLine(const Controls& data, PixelStrip& strip, float paletteDraw) {
   uint16_t lastDrawIdx = strip.lastDrawPos*(strip.length-1);
   uint16_t drawIdx = data.control*(strip.length-1);
@@ -326,21 +344,45 @@ static void endTicker(const Controls& data, PixelStrip& strip) {
 }
 
 // 72. MidTicker: Control sets palette entry to draw at mid of strip. Smoothing is scroll pos, but moving out both ways
+static void midTicker(const Controls& data, PixelStrip& strip) {
+  strip.pixels[strip.length/2] = data.control;
+  biScroll(data, strip, -1.0f);
+}
 
 // 73. EndsTicker: Control sets palette entry to draw at both ends of strip. Smoothing is scroll pos, but moving in both ways
+static void endsTicker(const Controls& data, PixelStrip& strip) {
+  strip.pixels[0] = data.control;
+  strip.pixels[strip.length-1] = data.control;
+  biScroll(data, strip);
+}
 
-// 80. StartTicker: Control sets palette entry to draw at start of strip. Smoothing is scroll pos
+// 80. StartTickerFade: Control sets palette entry to draw at start of strip. Smoothing is scroll pos. A fixed slow fade is applied
 static void startTickerFade(const Controls& data, PixelStrip& strip) {
   fadeAll(data, strip, 1.0f);
   strip.pixels[0] = data.control;
   scroll(data, strip);
 }
 
-// 81. EndTicker: Control sets palette entry to draw at end of strip. Smoothing is scroll pos
+// 81. EndTickerFade: Control sets palette entry to draw at end of strip. Smoothing is scroll pos. A fixed slow fade is applied
 static void endTickerFade(const Controls& data, PixelStrip& strip) {
   fadeAll(data, strip, 1.0f);
   strip.pixels[strip.length-1] = data.control;
   scroll(data, strip);
+}
+
+// 82. MidTickerFade: Control sets palette entry to draw at mid of strip. Smoothing is scroll pos, but moving out both ways. A fixed slow fade is applied
+static void midTickerFade(const Controls& data, PixelStrip& strip) {
+  fadeAll(data, strip, 1.0f);
+  strip.pixels[strip.length/2] = data.control;
+  biScroll(data, strip, -1.0f);
+}
+
+// 83. EndsTickerFade: Control sets palette entry to draw at both ends of strip. Smoothing is scroll pos, but moving in both ways. A fixed slow fade is applied
+static void endsTickerFade(const Controls& data, PixelStrip& strip) {
+  fadeAll(data, strip, 1.0f);
+  strip.pixels[0] = data.control;
+  strip.pixels[strip.length-1] = data.control;
+  biScroll(data, strip);
 }
 
 void updateStrip(const Controls& data, PixelStrip& strip, unsigned long timeNow) {
@@ -388,13 +430,13 @@ void updateStrip(const Controls& data, PixelStrip& strip, unsigned long timeNow)
     // Ticker
     case 70: startTicker(data, strip); break;
     case 71: endTicker(data, strip); break;
-    // case 72: midTicker(data, strip); break;
-    // case 73: endsTicker(data, strip); break;
+    case 72: midTicker(data, strip); break;
+    case 73: endsTicker(data, strip); break;
     // TickerFade
     case 80: startTickerFade(data, strip); break;
     case 81: endTickerFade(data, strip); break;
-    // case 82: midTickerFade(data, strip); break;
-    // case 83: endsTickerFade(data, strip); break;
+    case 82: midTickerFade(data, strip); break;
+    case 83: endsTickerFade(data, strip); break;
   }
   // Apply palette and set colours
   for (uint16_t i=0; i<strip.length; i++ ) {
