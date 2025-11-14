@@ -3,11 +3,8 @@ ESP32 based DMX controller for SPI LED strips
 
 ## TODO
 ### SOFTWARE
-* ? Blur (diffuse and slight fade): own mode and for more plot/line modes
- ??Maybe just a single droplets mode??
+* PlotBlur mode: diffuse out and slight fade, control is droplet pos, smoothing is palette entry for droplet
 * ? Control usage for fade/fizzle background modes
-* More modes
-* More palettes
 * Set DMX base channel from DIP switches
 * Support for 3 strips
 ### HARDWARE
@@ -83,7 +80,7 @@ Dmx_ESP32 https://github.com/devarishi7/Dmx_ESP32
 43. Endsfizzle: solid bar expands from both ends of strip, control is length of bar, smooth is fizzle time
 
 ### Plotting
-50. Plot: Control sets plot pos. Fore is drawn into the strip at plot pos. Smoothing is palette pos to plot with.
+50. Plot: Control sets plot pos. Smoothing is palette pos to plot at the plot pos.
 51. PlotFade: Same as Plot, but drawn pixels slowly fade back to back colour. Smoothing is fade time
 52. PlotScrollFade: Control sets plot pos. Fore is drawn into the strip at plot pos. Smoothing is scroll pos. Fade time is fixed long.
 53. PlotFizzle: Same as Plot, but drawn pixels slowly fizzle back to back colour. Smoothing is fizzle time

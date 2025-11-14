@@ -279,7 +279,7 @@ static void endsFizzle(const Controls& data, PixelStrip& strip) {
   }
 }
 
-// 50: plot: Control sets plot pos. Fore is drawn into the strip at plot pos. Smoothing is palette pos to plot with.
+// 50. Plot: Control sets plot pos. Smoothing is palette pos to plot at the plot pos.
 void plot(const Controls& data, PixelStrip& strip) {
   uint16_t plotIdx = data.control*(strip.length-1);
   strip.pixels[plotIdx] = data.smooth;
