@@ -1,5 +1,6 @@
 #include <cmath>
 #include "palettes.h"
+#include "hsv.h"
 
 static const Rgb off = Rgb(0,0,0);
 
@@ -8,6 +9,11 @@ static float limit (float x) {
   if (x < 0.0f) { return 0.0f; }
   if (x > 1.0f) { return 1.0f; }
   return x;
+}
+
+static Rgb blend3Hsv(const Rgb& a, const Rgb& b, const Rgb& c, float lerp) {
+  if (lerp < 1.0f/2.0f) { return blendHsv(a, b, lerp*2.0f); }
+  else { return blendHsv(b, c, (lerp-1.0f/2.0f)*2.0f/1.0f); }
 }
 
 static Rgb blend2 (Rgb left, Rgb right, float lerp) {
@@ -109,12 +115,19 @@ Rgb palette(uint8_t type, const Rgb& back, const Rgb& fore, float lerp) {
     case 6: return gamma(blend6(back, fore, back, fore, back, fore, lerp));
     case 7: return gamma(blend5(off, back, fore, back, fore, lerp));
     case 8: return gamma(blend7(off, back, fore, back, fore, back, fore, lerp));
-    case 10: return gamma(rainbow(lerp));
-    case 11: return gamma(blackbody(lerp));
-    case 12: return gamma(oil(lerp));
-    case 13: return gamma(neon(lerp));
-    case 14: return gamma(fire(lerp));
-    case 15: return gamma(heat(lerp));
+
+    case 10: return gamma(blendHsv(back, fore, lerp));
+    case 11: return gamma(blend3Hsv(off, back, fore, lerp));
+    case 12: return gamma(blend3Hsv(back, fore, off, lerp));
+    case 13: return gamma(blend3Hsv(back, off, fore, lerp));
+    case 14: return gamma(blend3Hsv(off, fore, back, lerp));
+
+    case 20: return gamma(rainbow(lerp));
+    case 21: return gamma(blackbody(lerp));
+    case 22: return gamma(oil(lerp));
+    case 23: return gamma(neon(lerp));
+    case 24: return gamma(fire(lerp));
+    case 25: return gamma(heat(lerp));
   }
   return off;
 }

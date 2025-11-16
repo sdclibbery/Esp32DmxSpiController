@@ -3,6 +3,7 @@ ESP32 based DMX controller for SPI LED strips
 
 ## TODO
 ### SOFTWARE
+* hsv blend palettes
 * PlotBlur mode: diffuse out and slight fade, control is droplet pos, smoothing is palette entry for droplet
 * ? Control usage for fade/fizzle background modes
 * Set DMX base channel from DIP switches
@@ -31,6 +32,7 @@ Dmx_ESP32 https://github.com/devarishi7/Dmx_ESP32
 8-10. Fore RGB
 
 ## Palettes
+### Using DMX specified back/fore colours, with extra black option, blended in RGB space
 0. BF: lerp from back colour to fore colour
 1. OBF: lerp from off (black) to back to fore
 2. BFO
@@ -40,12 +42,19 @@ Dmx_ESP32 https://github.com/devarishi7/Dmx_ESP32
 6. BFBFBF
 7. OBFBF
 8. OBFBFBF
-10. Rainbow
-11. Black body
-12. Oil
-13. Neon
-14. Fire
-15. Heat
+### Using DMX specified back/fore colours, with extra black option, blended in HSV space
+10. BF in HSV space
+11. OBF in HSV space
+12. BFO in HSV space
+13. BOF in HSV space
+14. OFB in HSV space
+### Preset modes not using DMX back/fore colours at all
+20. Rainbow
+21. Black body
+22. Oil
+23. Neon
+24. Fire
+25. Heat
 
 ## Modes
 ### Background
