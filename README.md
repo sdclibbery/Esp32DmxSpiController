@@ -3,7 +3,13 @@ ESP32 based DMX controller for SPI LED strips
 
 ## TODO
 ### SOFTWARE
-* hsv blend palettes
+* palette blends to try
+    Square lerp before blending
+    Flick to white at the end OBFW
+    Blend via sum, scaled so that brightest component is max(1)
+    Blend via F-B
+    Blend in hsv but h, s and v have different linearity
+* Palettes with fizzle. Amount of fizzle lower at palette ends?
 * PlotBlur mode: diffuse out and slight fade, control is droplet pos, smoothing is palette entry for droplet
 * ? Control usage for fade/fizzle background modes
 * Set DMX base channel from DIP switches

@@ -11,12 +11,7 @@ static float limit (float x) {
   return x;
 }
 
-static Rgb blend3Hsv(const Rgb& a, const Rgb& b, const Rgb& c, float lerp) {
-  if (lerp < 1.0f/2.0f) { return blendHsv(a, b, lerp*2.0f); }
-  else { return blendHsv(b, c, (lerp-1.0f/2.0f)*2.0f/1.0f); }
-}
-
-static Rgb blend2 (Rgb left, Rgb right, float lerp) {
+static Rgb blendRgb (const Rgb& left, const Rgb& right, float lerp) {
     return Rgb(
       left.red + (right.red - left.red) * lerp,
       left.green + (right.green - left.green) * lerp,
@@ -24,29 +19,31 @@ static Rgb blend2 (Rgb left, Rgb right, float lerp) {
     );
 }
 
-static Rgb blend3(const Rgb& a, const Rgb& b, const Rgb& c, float lerp) {
-  if (lerp < 1.0f/2.0f) { return blend2(a, b, lerp*2.0f); }
-  else { return blend2(b, c, (lerp-1.0f/2.0f)*2.0f/1.0f); }
+typedef Rgb (*BlendFunc)(const Rgb&, const Rgb&, float);
+
+static Rgb blend3(const Rgb& a, const Rgb& b, const Rgb& c, float lerp, BlendFunc blend) {
+  if (lerp < 1.0f/2.0f) { return blend(a, b, lerp*2.0f); }
+  else { return blend(b, c, (lerp-1.0f/2.0f)*2.0f/1.0f); }
 }
 
-static Rgb blend4(const Rgb& a, const Rgb& b, const Rgb& c, const Rgb& d, float lerp) {
-  if (lerp <= 1.0f/3.0f) { return blend2(a, b, lerp*3.0f); }
-   else { return blend3(b, c, d, (lerp-1.0f/3.0f)*3.0f/2.0f); }
+static Rgb blend4(const Rgb& a, const Rgb& b, const Rgb& c, const Rgb& d, float lerp, BlendFunc blend) {
+  if (lerp <= 1.0f/3.0f) { return blend(a, b, lerp*3.0f); }
+   else { return blend3(b, c, d, (lerp-1.0f/3.0f)*3.0f/2.0f, blend); }
 }
 
-static Rgb blend5(const Rgb& a, const Rgb& b, const Rgb& c, const Rgb& d, const Rgb& e, float lerp) {
-  if (lerp <= 1.0f/4.0f) { return blend2(a, b, lerp*4.0f); }
-  else { return blend4(b, c, d, e, (lerp-1.0f/4.0f)*4.0f/3.0f); }
+static Rgb blend5(const Rgb& a, const Rgb& b, const Rgb& c, const Rgb& d, const Rgb& e, float lerp, BlendFunc blend) {
+  if (lerp <= 1.0f/4.0f) { return blend(a, b, lerp*4.0f); }
+  else { return blend4(b, c, d, e, (lerp-1.0f/4.0f)*4.0f/3.0f, blend); }
 }
 
-static Rgb blend6(const Rgb& a, const Rgb& b, const Rgb& c, const Rgb& d, const Rgb& e, const Rgb& f, float lerp) {
-  if (lerp <= 1.0f/5.0f) { return blend2(a, b, lerp*5.0f); }
-  else { return blend5(b, c, d, e, f, (lerp-1.0f/5.0f)*5.0f/4.0f); }
+static Rgb blend6(const Rgb& a, const Rgb& b, const Rgb& c, const Rgb& d, const Rgb& e, const Rgb& f, float lerp, BlendFunc blend) {
+  if (lerp <= 1.0f/5.0f) { return blend(a, b, lerp*5.0f); }
+  else { return blend5(b, c, d, e, f, (lerp-1.0f/5.0f)*5.0f/4.0f, blend); }
 }
 
-static Rgb blend7(const Rgb& a, const Rgb& b, const Rgb& c, const Rgb& d, const Rgb& e, const Rgb& f, const Rgb& g, float lerp) {
-  if (lerp <= 1.0f/6.0f) { return blend2(a, b, lerp*6.0f); }
-  else { return blend6(b, c, d, e, f, g, (lerp-1.0f/6.0f)*6.0f/5.0f); }
+static Rgb blend7(const Rgb& a, const Rgb& b, const Rgb& c, const Rgb& d, const Rgb& e, const Rgb& f, const Rgb& g, float lerp, BlendFunc blend) {
+  if (lerp <= 1.0f/6.0f) { return blend(a, b, lerp*6.0f); }
+  else { return blend6(b, c, d, e, f, g, (lerp-1.0f/6.0f)*6.0f/5.0f, blend); }
 }
 
 static Rgb rainbow(float lerp) {
@@ -106,21 +103,25 @@ static Rgb gamma(const Rgb& colour) {
 Rgb palette(uint8_t type, const Rgb& back, const Rgb& fore, float lerp) {
   lerp = limit(lerp);
   switch (type) {
-    case 0: return gamma(blend2(back, fore, lerp));
-    case 1: return gamma(blend3(off, back, fore, lerp));
-    case 2: return gamma(blend3(back, fore, off, lerp));
-    case 3: return gamma(blend3(back, off, fore, lerp));
-    case 4: return gamma(blend3(off, fore, back, lerp));
-    case 5: return gamma(blend4(back, fore, back, fore, lerp));
-    case 6: return gamma(blend6(back, fore, back, fore, back, fore, lerp));
-    case 7: return gamma(blend5(off, back, fore, back, fore, lerp));
-    case 8: return gamma(blend7(off, back, fore, back, fore, back, fore, lerp));
+    case 0: return gamma(blendRgb(back, fore, lerp));
+    case 1: return gamma(blend3(off, back, fore, lerp, &blendRgb));
+    case 2: return gamma(blend3(back, fore, off, lerp, &blendRgb));
+    case 3: return gamma(blend3(back, off, fore, lerp, &blendRgb));
+    case 4: return gamma(blend3(off, fore, back, lerp, &blendRgb));
+    case 5: return gamma(blend4(back, fore, back, fore, lerp, &blendRgb));
+    case 6: return gamma(blend6(back, fore, back, fore, back, fore, lerp, &blendRgb));
+    case 7: return gamma(blend5(off, back, fore, back, fore, lerp, &blendRgb));
+    case 8: return gamma(blend7(off, back, fore, back, fore, back, fore, lerp, &blendRgb));
 
     case 10: return gamma(blendHsv(back, fore, lerp));
-    case 11: return gamma(blend3Hsv(off, back, fore, lerp));
-    case 12: return gamma(blend3Hsv(back, fore, off, lerp));
-    case 13: return gamma(blend3Hsv(back, off, fore, lerp));
-    case 14: return gamma(blend3Hsv(off, fore, back, lerp));
+    case 11: return gamma(blend3(off, back, fore, lerp, &blendHsv));
+    case 12: return gamma(blend3(back, fore, off, lerp, &blendHsv));
+    case 13: return gamma(blend3(back, off, fore, lerp, &blendHsv));
+    case 14: return gamma(blend3(off, fore, back, lerp, &blendHsv));
+    case 15: return gamma(blend4(back, fore, back, fore, lerp, &blendHsv));
+    case 16: return gamma(blend6(back, fore, back, fore, back, fore, lerp, &blendHsv));
+    case 17: return gamma(blend5(off, back, fore, back, fore, lerp, &blendHsv));
+    case 18: return gamma(blend7(off, back, fore, back, fore, back, fore, lerp, &blendHsv));
 
     case 20: return gamma(rainbow(lerp));
     case 21: return gamma(blackbody(lerp));
