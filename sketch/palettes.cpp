@@ -100,6 +100,15 @@ static Rgb gamma(const Rgb& colour) {
   return Rgb( gammaChannel(colour.red), gammaChannel(colour.green), gammaChannel(colour.blue) );
 }
 
+static float nonLinear(float x) {
+  return limit((x*x + x)/2.0f);
+}
+
+static float fizzle(float x) {
+  float rnd = (float)(rand()%1000) / 1000.0f;
+  return limit(x + (std::pow(rnd, 7.0f) - 0.5f) * 0.4f);
+}
+
 Rgb palette(uint8_t type, const Rgb& back, const Rgb& fore, float lerp) {
   lerp = limit(lerp);
   switch (type) {
@@ -123,12 +132,32 @@ Rgb palette(uint8_t type, const Rgb& back, const Rgb& fore, float lerp) {
     case 17: return gamma(blend5(off, back, fore, back, fore, lerp, &blendHsv));
     case 18: return gamma(blend7(off, back, fore, back, fore, back, fore, lerp, &blendHsv));
 
-    case 20: return gamma(rainbow(lerp));
-    case 21: return gamma(blackbody(lerp));
-    case 22: return gamma(oil(lerp));
-    case 23: return gamma(neon(lerp));
-    case 24: return gamma(fire(lerp));
-    case 25: return gamma(heat(lerp));
+    case 20: return gamma(blendHsv(back, fore, nonLinear(lerp)));
+    case 21: return gamma(blend3(off, back, fore, nonLinear(lerp), &blendHsv));
+    case 22: return gamma(blend3(back, fore, off, nonLinear(lerp), &blendHsv));
+    case 23: return gamma(blend3(back, off, fore, nonLinear(lerp), &blendHsv));
+    case 24: return gamma(blend3(off, fore, back, nonLinear(lerp), &blendHsv));
+    case 25: return gamma(blend4(back, fore, back, fore, nonLinear(lerp), &blendHsv));
+    case 26: return gamma(blend6(back, fore, back, fore, back, fore, nonLinear(lerp), &blendHsv));
+    case 27: return gamma(blend5(off, back, fore, back, fore, nonLinear(lerp), &blendHsv));
+    case 28: return gamma(blend7(off, back, fore, back, fore, back, fore, nonLinear(lerp), &blendHsv));
+
+    case 30: return gamma(blendHsv(back, fore, fizzle(lerp)));
+    case 31: return gamma(blend3(off, back, fore, fizzle(lerp), &blendHsv));
+    case 32: return gamma(blend3(back, fore, off, fizzle(lerp), &blendHsv));
+    case 33: return gamma(blend3(back, off, fore, fizzle(lerp), &blendHsv));
+    case 34: return gamma(blend3(off, fore, back, fizzle(lerp), &blendHsv));
+    case 35: return gamma(blend4(back, fore, back, fore, fizzle(lerp), &blendHsv));
+    case 36: return gamma(blend6(back, fore, back, fore, back, fore, fizzle(lerp), &blendHsv));
+    case 37: return gamma(blend5(off, back, fore, back, fore, fizzle(lerp), &blendHsv));
+    case 38: return gamma(blend7(off, back, fore, back, fore, back, fore, fizzle(lerp), &blendHsv));
+
+    case 240: return gamma(rainbow(lerp));
+    case 241: return gamma(blackbody(lerp));
+    case 242: return gamma(oil(lerp));
+    case 243: return gamma(neon(lerp));
+    case 244: return gamma(fire(lerp));
+    case 245: return gamma(heat(lerp));
   }
   return off;
 }

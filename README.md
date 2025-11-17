@@ -4,12 +4,10 @@ ESP32 based DMX controller for SPI LED strips
 ## TODO
 ### SOFTWARE
 * palette blends to try
-    Square lerp before blending
-    Flick to white at the end OBFW
     Blend via sum, scaled so that brightest component is max(1)
     Blend via F-B
     Blend in hsv but h, s and v have different linearity
-* Palettes with fizzle. Amount of fizzle lower at palette ends?
+    Flick to white at the end OBFW
 * PlotBlur mode: diffuse out and slight fade, control is droplet pos, smoothing is palette entry for droplet
 * ? Control usage for fade/fizzle background modes
 * Set DMX base channel from DIP switches
@@ -48,19 +46,19 @@ Dmx_ESP32 https://github.com/devarishi7/Dmx_ESP32
 6. BFBFBF
 7. OBFBF
 8. OBFBFBF
-### Using DMX specified back/fore colours, with extra black option, blended in HSV space
-10. BF in HSV space
-11. OBF in HSV space
-12. BFO in HSV space
-13. BOF in HSV space
-14. OFB in HSV space
+### Back/fore blends, but blended in HSV space
+10-18. Same as 0-8 but blemd in HSV space
+### Back/fore blends, but non linear lerp
+20-28. Same as 0-8 but lerp pushed to end (x^2 + x)/2
+### Back/fore blends, but with fizzle
+30-38. Same as 0-8 but with fizzle
 ### Preset modes not using DMX back/fore colours at all
-20. Rainbow
-21. Black body
-22. Oil
-23. Neon
-24. Fire
-25. Heat
+240. Rainbow
+241. Black body
+242. Oil
+243. Neon
+244. Fire
+245. Heat
 
 ## Modes
 ### Background
