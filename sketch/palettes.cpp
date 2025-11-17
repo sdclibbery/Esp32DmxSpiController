@@ -1,6 +1,9 @@
 #include <cmath>
+#include <algorithm>
 #include "palettes.h"
 #include "hsv.h"
+
+typedef Rgb (*BlendFunc)(const Rgb&, const Rgb&, float);
 
 static const Rgb off = Rgb(0,0,0);
 
@@ -11,6 +14,8 @@ static float limit (float x) {
   return x;
 }
 
+static Rgb blend3(const Rgb& a, const Rgb& b, const Rgb& c, float lerp, BlendFunc blend);
+
 static Rgb blendRgb (const Rgb& left, const Rgb& right, float lerp) {
     return Rgb(
       left.red + (right.red - left.red) * lerp,
@@ -19,7 +24,23 @@ static Rgb blendRgb (const Rgb& left, const Rgb& right, float lerp) {
     );
 }
 
-typedef Rgb (*BlendFunc)(const Rgb&, const Rgb&, float);
+static Rgb blendScaledSum(const Rgb& left, const Rgb& right, float lerp) {
+  float sumRed = left.red + right.red;
+  float sumGreen = left.green + right.green;
+  float sumBlue = left.blue + right.blue;
+  float sumMax = std::max(sumRed, std::max(sumGreen, sumBlue));
+  float scale = sumMax > 1.0f ? 1.0f / sumMax : 1.0f;
+  return blend3(left, Rgb(sumRed * scale, sumGreen * scale, sumBlue * scale), right, lerp, blendRgb);
+}
+
+static Rgb blendSub(const Rgb& left, const Rgb& right, float lerp) {
+  Rgb sub = Rgb(
+    limit(right.red - left.red),
+    limit(right.green - left.green),
+    limit(right.blue - left.blue)
+  );
+  return blend3(left, sub, right, lerp, blendRgb);
+}
 
 static Rgb blend3(const Rgb& a, const Rgb& b, const Rgb& c, float lerp, BlendFunc blend) {
   if (lerp < 1.0f/2.0f) { return blend(a, b, lerp*2.0f); }
@@ -151,6 +172,26 @@ Rgb palette(uint8_t type, const Rgb& back, const Rgb& fore, float lerp) {
     case 36: return gamma(blend6(back, fore, back, fore, back, fore, fizzle(lerp), &blendHsv));
     case 37: return gamma(blend5(off, back, fore, back, fore, fizzle(lerp), &blendHsv));
     case 38: return gamma(blend7(off, back, fore, back, fore, back, fore, fizzle(lerp), &blendHsv));
+
+    case 40: return gamma(blendScaledSum(back, fore, lerp));
+    case 41: return gamma(blend3(off, back, fore, lerp, &blendScaledSum));
+    case 42: return gamma(blend3(back, fore, off, lerp, &blendScaledSum));
+    case 43: return gamma(blend3(back, off, fore, lerp, &blendScaledSum));
+    case 44: return gamma(blend3(off, fore, back, lerp, &blendScaledSum));
+    case 45: return gamma(blend4(back, fore, back, fore, lerp, &blendScaledSum));
+    case 46: return gamma(blend6(back, fore, back, fore, back, fore, lerp, &blendScaledSum));
+    case 47: return gamma(blend5(off, back, fore, back, fore, lerp, &blendScaledSum));
+    case 48: return gamma(blend7(off, back, fore, back, fore, back, fore, lerp, &blendScaledSum));
+
+    case 50: return gamma(blendSub(back, fore, lerp));
+    case 51: return gamma(blend3(off, back, fore, lerp, &blendSub));
+    case 52: return gamma(blend3(back, fore, off, lerp, &blendSub));
+    case 53: return gamma(blend3(back, off, fore, lerp, &blendSub));
+    case 54: return gamma(blend3(off, fore, back, lerp, &blendSub));
+    case 55: return gamma(blend4(back, fore, back, fore, lerp, &blendSub));
+    case 56: return gamma(blend6(back, fore, back, fore, back, fore, lerp, &blendSub));
+    case 57: return gamma(blend5(off, back, fore, back, fore, lerp, &blendSub));
+    case 58: return gamma(blend7(off, back, fore, back, fore, back, fore, lerp, &blendSub));
 
     case 240: return gamma(rainbow(lerp));
     case 241: return gamma(blackbody(lerp));
