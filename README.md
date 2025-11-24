@@ -4,6 +4,10 @@ ESP32 based DMX controller for SPI LED strips
 ## TODO
 ### SOFTWARE
 * PlotBlur mode: diffuse out and slight fade, control is droplet pos, smoothing is palette entry for droplet
+ ?? Once plotted one frame at one pos, dont after that until pos moves again?
+ * Also just Blur mode?
+ * Droplet mode, every time control has a rising edge past 1/2, make a droplet ata random position
+* Vu meter mode with slowly falling peak indicator
 * ? Control usage for fade/fizzle background modes
 * Set DMX base channel from DIP switches
 * Support for 3 strips
@@ -51,6 +55,8 @@ Dmx_ESP32 https://github.com/devarishi7/Dmx_ESP32
 40-48. Same as 0-8 but with blended via scaled sum
 ### Back/fore blends, but blended via fore-back
 50-58. Same as 0-8 but with fore-back
+### Back/fore blends, but with wizzle
+60-68. Same as 0-8 but with wizzle (occasional random flick to white, irrespective of palette)
 ### Preset modes not using DMX back/fore colours at all
 240. Rainbow
 241. Black body

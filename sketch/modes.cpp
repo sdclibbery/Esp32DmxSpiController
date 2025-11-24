@@ -440,7 +440,7 @@ void updateStrip(const Controls& data, PixelStrip& strip, unsigned long timeNow)
   }
   // Apply palette and set colours
   for (uint16_t i=0; i<strip.length; i++ ) {
-    strip.setPixel(i, palette(data.palette, data.back, data.fore, strip.pixels[i]));
+    strip.setPixel(i, palette(data.palette, data.back, data.fore, strip.pixels[i], strip.dt));
     strip.lastPixels[i] = strip.pixels[i];
   }
 }

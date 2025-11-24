@@ -130,7 +130,14 @@ static float fizzle(float x) {
   return limit(x + (std::pow(rnd, 7.0f) - 0.5f) * 0.4f);
 }
 
-Rgb palette(uint8_t type, const Rgb& back, const Rgb& fore, float lerp) {
+static Rgb wizzle(const Rgb& colour, float dt) {
+  float chancePerSecondPerLed = 0.33f;
+  float chanceThisFrame = dt * chancePerSecondPerLed;
+  if (rand() % (unsigned int)(1.0f/chanceThisFrame) == 0) { return Rgb(1.0f, 1.0f, 1.0f); }
+  return colour;
+}
+
+Rgb palette(uint8_t type, const Rgb& back, const Rgb& fore, float lerp, float dt) {
   lerp = limit(lerp);
   switch (type) {
     case 0: return gamma(blendRgb(back, fore, lerp));
@@ -192,6 +199,16 @@ Rgb palette(uint8_t type, const Rgb& back, const Rgb& fore, float lerp) {
     case 56: return gamma(blend6(back, fore, back, fore, back, fore, lerp, &blendSub));
     case 57: return gamma(blend5(off, back, fore, back, fore, lerp, &blendSub));
     case 58: return gamma(blend7(off, back, fore, back, fore, back, fore, lerp, &blendSub));
+
+    case 60: return wizzle(gamma(blendRgb(back, fore, lerp)), dt);
+    case 61: return wizzle(gamma(blend3(off, back, fore, lerp, &blendRgb)), dt);
+    case 62: return wizzle(gamma(blend3(back, fore, off, lerp, &blendRgb)), dt);
+    case 63: return wizzle(gamma(blend3(back, off, fore, lerp, &blendRgb)), dt);
+    case 64: return wizzle(gamma(blend3(off, fore, back, lerp, &blendRgb)), dt);
+    case 65: return wizzle(gamma(blend4(back, fore, back, fore, lerp, &blendRgb)), dt);
+    case 66: return wizzle(gamma(blend6(back, fore, back, fore, back, fore, lerp, &blendRgb)), dt);
+    case 67: return wizzle(gamma(blend5(off, back, fore, back, fore, lerp, &blendRgb)), dt);
+    case 68: return wizzle(gamma(blend7(off, back, fore, back, fore, back, fore, lerp, &blendRgb)), dt);
 
     case 240: return gamma(rainbow(lerp));
     case 241: return gamma(blackbody(lerp));
