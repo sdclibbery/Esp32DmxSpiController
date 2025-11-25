@@ -3,10 +3,8 @@ ESP32 based DMX controller for SPI LED strips
 
 ## TODO
 ### SOFTWARE
-* PlotBlur mode: diffuse out and slight fade, control is droplet pos, smoothing is palette entry for droplet
- ?? Once plotted one frame at one pos, dont after that until pos moves again?
- * Also just Blur mode?
- * Droplet mode, every time control has a rising edge past 1/2, make a droplet ata random position
+* PlotBlur mode: control is plot pos, smoothing is blur rate
+   Once plotted one frame at one pos, dont after that until pos moves again?
 * Vu meter mode with slowly falling peak indicator
 * ? Control usage for fade/fizzle background modes
 * Set DMX base channel from DIP switches
@@ -72,12 +70,14 @@ Dmx_ESP32 https://github.com/devarishi7/Dmx_ESP32
 1. Fizzle: Whatever is currently showing, fizzle it down through the palette. Control does nothing, smooth is fizzle time.
  ??? control should set target palette position, and it fizzles to that?
 2. Scroll: Scroll whatever is currently showing. Control does nothing, smooth is scroll pos.
+3. Blur: Blur whatever is currently showing with a slight fade. Control does nothing, smooth is blur rate.
 
-### Full strip
+### Full strip / misc
 10. Solid: Blend entire strip through the palette based on control, smoothing applies a curved palette profile
 11. Gradient: control sets start palette position, smoothing sets end palette position, blend between the two
 12. Sine: Sine waves. Control is phase, smoothing is wavelength
 13. Noise: Perlin noise. Control is seed. Smoothing is scale
+14. Droplet: plot at random pos when control has a rising edge. Smooth is blur rate.
 
 ### Meter Gradient
 20. StartGradient: solid bar rises from start of strip, control is length of bar, smooth is lerp power in rest of strip

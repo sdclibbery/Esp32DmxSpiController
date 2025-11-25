@@ -26,7 +26,7 @@ static float powerSmooth (float x, float p) {
 
 static void fadePixel (const Controls& data, PixelStrip& strip, uint16_t idx, float fadeTime) {
   strip.pixels[idx] -= strip.dt / (fadeTime + 0.001f);
-  limit(strip.pixels[idx]);
+  strip.pixels[idx] = limit(strip.pixels[idx]);
 }
 void fadeAll(const Controls& data, PixelStrip& strip, float fadeTime) {
   for (uint16_t i=0; i<strip.length; i++ ) {
@@ -37,7 +37,7 @@ void fadeAll(const Controls& data, PixelStrip& strip, float fadeTime) {
 static void fizzlePixel (const Controls& data, PixelStrip& strip, uint16_t idx, float fizzleTime) {
   fizzleTime = (0.25f + 2.0f*fizzleTime) * (float)(rand()%1000) / 1000.0f;
   strip.pixels[idx] -= strip.dt / (fizzleTime + 0.001f);
-  limit(strip.pixels[idx]);
+  strip.pixels[idx] = limit(strip.pixels[idx]);
 }
 void fizzleAll(const Controls& data, PixelStrip& strip, float fizzleTime) {
   for (uint16_t i=0; i<strip.length; i++ ) {
@@ -64,6 +64,18 @@ static void scroll(const Controls& data, PixelStrip& strip) {
       strip.pixels[i] = strip.lastPixels[(strip.length + i - scrollSteps) % strip.length];
     }
     strip.lastScrollPos = data.smooth; // Only set when actually scrolled so that slow scrolling works
+  }
+}
+
+static void blur(const Controls& data, PixelStrip& strip, float blurRate) {
+  float blurFactor = (blurRate + 0.02f) * strip.dt * 5.0f;
+  for (uint16_t i=0; i<strip.length; i++ ) {
+    float left = (i == 0) ? 0.0f : strip.lastPixels[i - 1];
+    float right = (i+1 >= strip.length) ? 0.0f : strip.lastPixels[i + 1];
+    float center = strip.lastPixels[i];
+    float average = (left + center*2.0f + right) / 4.01f;
+    strip.pixels[i] = lerp(center, average, blurFactor);
+    strip.pixels[i] = limit(strip.pixels[i]);
   }
 }
 
@@ -115,6 +127,11 @@ static void scrollMode(const Controls& data, PixelStrip& strip) {
   scroll(data, strip);
 }
 
+// 3. Blur: Blur whatever is currently showing with a slight fade. Control does nothing, smooth is blur rate.
+static void blurMode(const Controls& data, PixelStrip& strip) {
+  blur(data, strip, data.smooth);
+}
+
 // 10: Solid: Blend entire strip through the palette based on control, smoothing does nothing
 static void solid(const Controls& data, PixelStrip& strip) {
   for (uint16_t i=0; i<strip.length; i++ ) {
@@ -150,6 +167,16 @@ static void noiseMode(const Controls& data, PixelStrip& strip) {
     float value = perlin_octaves(0.5f+pos*(8.0f - data.smooth*7.0f), data.control, 4, 0.5f, 2.0f);
     strip.pixels[i] = limit(value*(1.0f + data.smooth) + 0.5f);
   }
+}
+
+// 14. Droplet: plot at random pos when control has a rising edge. Smooth is blur rate.
+static void dropletMode(const Controls& data, PixelStrip& strip) {
+  blur(data, strip, data.smooth);
+  if (data.control > 0.5f && strip.lastDropletControl <= 0.5f) {
+    uint16_t dropPos = rand() % strip.length;
+    strip.pixels[dropPos] = 1.0f;    
+  }
+  strip.lastDropletControl = data.control;
 }
 
 // 20: StartGradient: solid bar rises from start of strip, control is length of bar, smooth is lerp power in rest of strip
@@ -397,11 +424,13 @@ void updateStrip(const Controls& data, PixelStrip& strip, unsigned long timeNow)
     case 0: fadeMode(data, strip); break;
     case 1: fizzleMode(data, strip); break;
     case 2: scrollMode(data, strip); break;
+    case 3: blurMode(data, strip); break;
     // Full strip
     case 10: solid(data, strip); break;
     case 11: gradientMode(data, strip); break;
     case 12: sineMode(data, strip); break;
     case 13: noiseMode(data, strip); break;
+    case 14: dropletMode(data, strip); break;
     // Meter gradient
     case 20: startGradient(data, strip); break;
     case 21: endGradient(data, strip); break;
