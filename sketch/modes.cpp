@@ -68,14 +68,16 @@ static void scroll(const Controls& data, PixelStrip& strip) {
 }
 
 static void blur(const Controls& data, PixelStrip& strip, float blurRate) {
-  float blurFactor = (blurRate + 0.02f) * strip.dt * 5.0f;
+  float blurFactor = (blurRate + 0.02f) * strip.dt * 15.0f;
   for (uint16_t i=0; i<strip.length; i++ ) {
-    float left = (i == 0) ? 0.0f : strip.lastPixels[i - 1];
-    float right = (i+1 >= strip.length) ? 0.0f : strip.lastPixels[i + 1];
+    float left = strip.lastPixels[(i < 1) ? 0 : i - 1];
+    float right = strip.lastPixels[(i+1 >= strip.length) ? strip.length-1 : i + 1];
     float center = strip.lastPixels[i];
-    float average = (left + center*2.0f + right) / 4.01f;
-    strip.pixels[i] = lerp(center, average, blurFactor);
-    strip.pixels[i] = limit(strip.pixels[i]);
+    float lDiff = left - center;
+    float rDiff = right - center;
+    strip.pixels[i] += lDiff * blurFactor / 2.0f;
+    strip.pixels[i] += rDiff * blurFactor / 2.0f;
+    strip.pixels[i] = limit(strip.pixels[i]*(1.0f - strip.dt*0.1f));
   }
 }
 
@@ -412,6 +414,31 @@ static void endsTickerFade(const Controls& data, PixelStrip& strip) {
   biScroll(data, strip);
 }
 
+// 90. StartBlur: pixel drawn at start of strip, control is palette entry of pixel, smooth is blur rate
+static void startBlur(const Controls& data, PixelStrip& strip) {
+  blur(data, strip, 0.5f + 3.0f * data.smooth);
+  strip.pixels[0] = data.control;
+}
+
+// 91. EndBlur: pixel drawn at end of strip, control is palette entry of pixel, smooth is blur rate
+static void endBlur(const Controls& data, PixelStrip& strip) {
+  blur(data, strip, 0.5f + 3.0f * data.smooth);
+  strip.pixels[strip.length-1] = data.control;
+}
+
+// 92. MidBlur: pixel drawn at centre of strip, control is palette entry of pixel, smooth is blur rate
+static void midBlur(const Controls& data, PixelStrip& strip) {
+  blur(data, strip, 0.5f + 2.0f * data.smooth);
+  strip.pixels[strip.length/2] = data.control;
+}
+
+// 93. EndsBlur: pixels drawn at both ends of strip, control is palette entry of pixel, smooth is blur rate
+static void endsBlur(const Controls& data, PixelStrip& strip) {
+  blur(data, strip, 0.5f + 2.0f * data.smooth);
+  strip.pixels[0] = data.control;
+  strip.pixels[strip.length-1] = data.control;
+}
+
 void updateStrip(const Controls& data, PixelStrip& strip, unsigned long timeNow) {
   // Timing
   strip.dt = (float)(timeNow - strip.lastUpdateTime) / 1000000.0f; // delta time in seconds
@@ -466,6 +493,11 @@ void updateStrip(const Controls& data, PixelStrip& strip, unsigned long timeNow)
     case 81: endTickerFade(data, strip); break;
     case 82: midTickerFade(data, strip); break;
     case 83: endsTickerFade(data, strip); break;
+    // MeterBlur
+    case 90: startBlur(data, strip); break;
+    case 91: endBlur(data, strip); break;
+    case 92: midBlur(data, strip); break;
+    case 93: endsBlur(data, strip); break;
   }
   // Apply palette and set colours
   for (uint16_t i=0; i<strip.length; i++ ) {

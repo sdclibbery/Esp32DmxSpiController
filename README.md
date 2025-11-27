@@ -3,10 +3,12 @@ ESP32 based DMX controller for SPI LED strips
 
 ## TODO
 ### SOFTWARE
+* Elastic modes
 * PlotBlur mode: control is plot pos, smoothing is blur rate
-   Once plotted one frame at one pos, dont after that until pos moves again?
+   Once plotted one frame at one pos, dont after that until pos moves again? Or this is a separate mode
+* Also LineBlur
 * Vu meter mode with slowly falling peak indicator
-* ? Control usage for fade/fizzle background modes
+* ? Control usage for background modes..??
 * Set DMX base channel from DIP switches
 * Support for 3 strips
 ### HARDWARE
@@ -120,3 +122,9 @@ Dmx_ESP32 https://github.com/devarishi7/Dmx_ESP32
 81. EndTickerFade: Control sets palette entry to draw at end of strip. Smoothing is scroll pos. A fixed slow fade is applied
 82. MidTickerFade: Control sets palette entry to draw at mid of strip. Smoothing is scroll pos, but moving out both ways. A fixed slow fade is applied
 83. EndsTickerFade: Control sets palette entry to draw at both ends of strip. Smoothing is scroll pos, but moving in both ways. A fixed slow fade is applied
+
+### MeterBlur
+90. StartBlur: pixel drawn at start of strip, control is palette entry of pixel, smooth is blur rate
+91. EndBlur: pixel drawn at end of strip, control is palette entry of pixel, smooth is blur rate
+92. MidBlur: pixel drawn at centre of strip, control is palette entry of pixel, smooth is blur rate
+93. EndsBlur: pixels drawn at both ends of strip, control is palette entry of pixel, smooth is blur rate
