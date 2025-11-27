@@ -81,6 +81,29 @@ static void blur(const Controls& data, PixelStrip& strip, float blurRate) {
   }
 }
 
+static void wave(const Controls& data, PixelStrip& strip, float spring, float damp=0.1f, float bounce=0.0f) {
+  spring = 1.0f + spring * 20.0f;
+  for (uint16_t i=0; i<strip.length; i++ ) {
+    float acc = 0.0f;
+    if (i > 0) { acc += (strip.lastPixels[i-1] - strip.lastPixels[i]) * spring * 0.5f; }
+    if (i < strip.length - 1) { acc += (strip.lastPixels[i+1] - strip.lastPixels[i]) * spring * 0.5f; }
+// Need a second order term to try and straighten/smooth the rope?
+    acc += -strip.pixelVel[i] * damp;
+    strip.pixelVel[i] += acc * strip.dt;
+  }
+  for (uint16_t i=0; i<strip.length; i++ ) {
+    strip.pixels[i] += strip.pixelVel[i] * strip.dt;
+    if (strip.pixels[i] < 0.0f) {
+      strip.pixels[i] = 0.0f;
+      strip.pixelVel[i] *= -bounce;
+    }
+    if (strip.pixels[i] > 1.0f) {
+      strip.pixels[i] = 1.0f;
+      strip.pixelVel[i] *= -bounce;
+    }
+  }
+}
+
 static void biScroll(const Controls& data, PixelStrip& strip, float direction=1.0f) {
   float scrollDelta = (data.smooth - strip.lastScrollPos)*direction;
   if (scrollDelta > 0.5f) { scrollDelta -= 1.0f; }
@@ -439,6 +462,36 @@ static void endsBlur(const Controls& data, PixelStrip& strip) {
   strip.pixels[strip.length-1] = data.control;
 }
 
+// 100. StartWave: pixel drawn at start of strip, control is palette entry of pixel, smooth is spring
+static void startWave(const Controls& data, PixelStrip& strip) {
+  wave(data, strip, data.smooth);
+  strip.pixels[0] = data.control;
+  strip.pixelVel[0] = 0.0f;
+}
+
+// 101. EndWave: pixel drawn at end of strip, control is palette entry of pixel, smooth is spring
+static void endWave(const Controls& data, PixelStrip& strip) {
+  wave(data, strip, data.smooth);
+  strip.pixels[strip.length-1] = data.control;
+  strip.pixelVel[strip.length-1] = 0.0f;
+}
+
+// 102. MidWave: pixel drawn at centre of strip, control is palette entry of pixel, smooth is spring
+static void midWave(const Controls& data, PixelStrip& strip) {
+  wave(data, strip, data.smooth);
+  strip.pixels[strip.length/2] = data.control;
+  strip.pixelVel[strip.length/2] = 0.0f;
+}
+
+// 103. EndsWave: pixels drawn at both ends of strip, control is palette entry of pixel, smooth is spring
+static void endsWave(const Controls& data, PixelStrip& strip) {
+  wave(data, strip, data.smooth);
+  strip.pixels[0] = data.control;
+  strip.pixelVel[0] = 0.0f;
+  strip.pixels[strip.length-1] = data.control;
+  strip.pixelVel[strip.length-1] = 0.0f;
+}
+
 void updateStrip(const Controls& data, PixelStrip& strip, unsigned long timeNow) {
   // Timing
   strip.dt = (float)(timeNow - strip.lastUpdateTime) / 1000000.0f; // delta time in seconds
@@ -498,6 +551,11 @@ void updateStrip(const Controls& data, PixelStrip& strip, unsigned long timeNow)
     case 91: endBlur(data, strip); break;
     case 92: midBlur(data, strip); break;
     case 93: endsBlur(data, strip); break;
+    // MeterWave
+    case 100: startWave(data, strip); break;
+    case 101: endWave(data, strip); break;
+    case 102: midWave(data, strip); break;
+    case 103: endsWave(data, strip); break;
   }
   // Apply palette and set colours
   for (uint16_t i=0; i<strip.length; i++ ) {

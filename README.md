@@ -3,7 +3,7 @@ ESP32 based DMX controller for SPI LED strips
 
 ## TODO
 ### SOFTWARE
-* Elastic modes
+* Wave modes
 * PlotBlur mode: control is plot pos, smoothing is blur rate
    Once plotted one frame at one pos, dont after that until pos moves again? Or this is a separate mode
 * Also LineBlur
@@ -57,6 +57,8 @@ Dmx_ESP32 https://github.com/devarishi7/Dmx_ESP32
 50-58. Same as 0-8 but with fore-back
 ### Back/fore blends, but with wizzle
 60-68. Same as 0-8 but with wizzle (occasional random flick to white, irrespective of palette)
+### Back/fore blends, but dithered
+70-78. Same as 0-8 but dithered instead of blended
 ### Preset modes not using DMX back/fore colours at all
 240. Rainbow
 241. Black body
@@ -128,3 +130,9 @@ Dmx_ESP32 https://github.com/devarishi7/Dmx_ESP32
 91. EndBlur: pixel drawn at end of strip, control is palette entry of pixel, smooth is blur rate
 92. MidBlur: pixel drawn at centre of strip, control is palette entry of pixel, smooth is blur rate
 93. EndsBlur: pixels drawn at both ends of strip, control is palette entry of pixel, smooth is blur rate
+
+### MeterWave
+100. StartWave: pixel drawn at start of strip, control is palette entry of pixel, smooth is spring
+101. EndWave: pixel drawn at end of strip, control is palette entry of pixel, smooth is spring
+102. MidWave: pixel drawn at centre of strip, control is palette entry of pixel, smooth is spring
+103. EndsWave: pixels drawn at both ends of strip, control is palette entry of pixel, smooth is spring

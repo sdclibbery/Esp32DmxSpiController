@@ -16,6 +16,7 @@ struct PixelStrip {
   uint16_t length;
   float* pixels;
   float* lastPixels;
+  float* pixelVel;
   unsigned long lastUpdateTime;
   float dt;
   float lastScrollPos;
@@ -26,6 +27,7 @@ struct PixelStrip {
     length = _length;
     pixels = new float[length] {0.0f};
     lastPixels = new float[length] {0.0f};
+    pixelVel = new float[length] {0.0f};
     setPixel = _setPixel;
     lastUpdateTime = 0;
     dt = 0.0f;

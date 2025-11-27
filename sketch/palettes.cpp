@@ -24,6 +24,15 @@ static Rgb blendRgb (const Rgb& left, const Rgb& right, float lerp) {
     );
 }
 
+static Rgb dither (const Rgb& left, const Rgb& right, float lerp) {
+    float cmp = std::sin(lerp * 50.0f)*0.5f + 0.5f;
+    if (lerp >= cmp) {
+      return right;
+    } else {
+      return left;
+    }
+}
+
 static Rgb blendScaledSum(const Rgb& left, const Rgb& right, float lerp) {
   float sumRed = left.red + right.red;
   float sumGreen = left.green + right.green;
@@ -209,6 +218,16 @@ Rgb palette(uint8_t type, const Rgb& back, const Rgb& fore, float lerp, float dt
     case 66: return wizzle(gamma(blend6(back, fore, back, fore, back, fore, lerp, &blendRgb)), dt);
     case 67: return wizzle(gamma(blend5(off, back, fore, back, fore, lerp, &blendRgb)), dt);
     case 68: return wizzle(gamma(blend7(off, back, fore, back, fore, back, fore, lerp, &blendRgb)), dt);
+
+    case 70: return gamma(dither(back, fore, lerp));
+    case 71: return gamma(blend3(off, back, fore, lerp, &dither));
+    case 72: return gamma(blend3(back, fore, off, lerp, &dither));
+    case 73: return gamma(blend3(back, off, fore, lerp, &dither));
+    case 74: return gamma(blend3(off, fore, back, lerp, &dither));
+    case 75: return gamma(blend4(back, fore, back, fore, lerp, &dither));
+    case 76: return gamma(blend6(back, fore, back, fore, back, fore, lerp, &dither));
+    case 77: return gamma(blend5(off, back, fore, back, fore, lerp, &dither));
+    case 78: return gamma(blend7(off, back, fore, back, fore, back, fore, lerp, &dither));
 
     case 240: return gamma(rainbow(lerp));
     case 241: return gamma(blackbody(lerp));
