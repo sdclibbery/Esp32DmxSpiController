@@ -81,13 +81,14 @@ static void blur(const Controls& data, PixelStrip& strip, float blurRate) {
   }
 }
 
-static void wave(const Controls& data, PixelStrip& strip, float spring, float damp=0.1f, float bounce=0.0f) {
+static void wave(const Controls& data, PixelStrip& strip, float spring, float damp=0.01f, float bounce=0.1f) {
   spring = 1.0f + spring * 20.0f;
   for (uint16_t i=0; i<strip.length; i++ ) {
     float acc = 0.0f;
     if (i > 0) { acc += (strip.lastPixels[i-1] - strip.lastPixels[i]) * spring * 0.5f; }
     if (i < strip.length - 1) { acc += (strip.lastPixels[i+1] - strip.lastPixels[i]) * spring * 0.5f; }
-// Need a second order term to try and straighten/smooth the rope?
+    if (i > 1) { acc -= (strip.lastPixels[i-2] - 2.0f*strip.lastPixels[i-1] + strip.lastPixels[i]) * spring * 0.1f; }
+    if (i < strip.length - 2) { acc -= (strip.lastPixels[i+2] - 2.0f*strip.lastPixels[i+1] + strip.lastPixels[i]) * spring * 0.1f; }
     acc += -strip.pixelVel[i] * damp;
     strip.pixelVel[i] += acc * strip.dt;
   }

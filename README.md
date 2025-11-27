@@ -3,7 +3,6 @@ ESP32 based DMX controller for SPI LED strips
 
 ## TODO
 ### SOFTWARE
-* Wave modes
 * PlotBlur mode: control is plot pos, smoothing is blur rate
    Once plotted one frame at one pos, dont after that until pos moves again? Or this is a separate mode
 * Also LineBlur
