@@ -3,13 +3,13 @@ ESP32 based DMX controller for SPI LED strips
 
 ## TODO
 ### SOFTWARE
-* PlotBlur mode: control is plot pos, smoothing is blur rate
-   Once plotted one frame at one pos, dont after that until pos moves again? Or this is a separate mode
-* Also LineBlur
+* saw/tri modes
+* !Zero velocity when change mode
+* LineBlur
 * Vu meter mode with slowly falling peak indicator
 * ? Control usage for background modes..??
 * Set DMX base channel from DIP switches
-* Support for 3 strips
+* Support for 3 strips and RGBW
 ### HARDWARE
 * Project case
 * DMX passhrough connectors
@@ -81,6 +81,8 @@ Dmx_ESP32 https://github.com/devarishi7/Dmx_ESP32
 12. Sine: Sine waves. Control is phase, smoothing is wavelength
 13. Noise: Perlin noise. Control is seed. Smoothing is scale
 14. Droplet: plot at random pos when control has a rising edge. Smooth is blur rate.
+15. Saw: Saw waves. Control is phase, smoothing is wavelength
+16. Tri: Triangle waves. Control is phase, smoothing is wavelength
 
 ### Meter Gradient
 20. StartGradient: solid bar rises from start of strip, control is length of bar, smooth is lerp power in rest of strip

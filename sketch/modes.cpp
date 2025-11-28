@@ -205,6 +205,27 @@ static void dropletMode(const Controls& data, PixelStrip& strip) {
   strip.lastDropletControl = data.control;
 }
 
+// 15. Saw: Saw waves. Control is phase, smoothing is wavelength
+static void sawMode(const Controls& data, PixelStrip& strip) {
+  for (uint16_t i=0; i<strip.length; i++ ) {
+    float pos = (float)i / (float)(strip.length-1);
+    float freq = 1.0f + data.smooth*8.0f;
+    float value = fmod(pos*freq - data.control + 1.0f, 1.0f);
+    strip.pixels[i] = limit(value);
+  }
+}
+
+// 16. Tri: Triangle waves. Control is phase, smoothing is wavelength
+static void triMode(const Controls& data, PixelStrip& strip) {
+  for (uint16_t i=0; i<strip.length; i++ ) {
+    float pos = (float)i / (float)(strip.length-1);
+    float freq = 1.0f + data.smooth*8.0f;
+    float value = fmod(pos*freq - data.control + 1.0f, 1.0f);
+    value = (value < 0.5f) ? (value * 2.0f) : (1.0f - (value - 0.5f) * 2.0f);
+    strip.pixels[i] = limit(value);
+  }
+}
+
 // 20: StartGradient: solid bar rises from start of strip, control is length of bar, smooth is lerp power in rest of strip
 static void startGradient(const Controls& data, PixelStrip& strip) {
   for (uint16_t i=0; i<strip.length; i++ ) {
@@ -512,6 +533,8 @@ void updateStrip(const Controls& data, PixelStrip& strip, unsigned long timeNow)
     case 12: sineMode(data, strip); break;
     case 13: noiseMode(data, strip); break;
     case 14: dropletMode(data, strip); break;
+    case 15: sawMode(data, strip); break;
+    case 16: triMode(data, strip); break;
     // Meter gradient
     case 20: startGradient(data, strip); break;
     case 21: endGradient(data, strip); break;
