@@ -46,18 +46,20 @@ Dmx_ESP32 https://github.com/devarishi7/Dmx_ESP32
 8. OBFBFBF
 ### Back/fore blends, but blended in HSV space
 10-18. Same as 0-8 but blemd in HSV space
-### Back/fore blends, but non linear lerp
+### Back/fore blends, but non linear blend
 20-28. Same as 0-8 but lerp pushed to end (x^2 + x)/2
-### Back/fore blends, but with fizzle
-30-38. Same as 0-8 but with fizzle
 ### Back/fore blends, but blended via scaled sum
-40-48. Same as 0-8 but with blended via scaled sum
-### Back/fore blends, but blended via fore-back
-50-58. Same as 0-8 but with fore-back
-### Back/fore blends, but with wizzle
-60-68. Same as 0-8 but with wizzle (occasional random flick to white, irrespective of palette)
+30-38. Same as 0-8 but with blended via scaled sum
+### Back/fore blends, but blended via fore - back
+40-48. Same as 0-8 but with fore-back
+
 ### Back/fore blends, but dithered
-70-78. Same as 0-8 but dithered instead of blended
+100-108. Same as 0-8 but dithered instead of blended
+### Back/fore blends, but with fizzle
+110-118. Same as 0-8 but with fizzle
+### Back/fore blends, but with wizzle
+120-128. Same as 0-8 but with wizzle (occasional random flick to white, irrespective of palette)
+
 ### Preset modes not using DMX back/fore colours at all
 240. Rainbow
 241. Black body
