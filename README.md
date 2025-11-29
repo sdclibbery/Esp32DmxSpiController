@@ -3,10 +3,9 @@ ESP32 based DMX controller for SPI LED strips
 
 ## TODO
 ### SOFTWARE
-* saw/tri modes
 * !Zero velocity when change mode
 * LineBlur
-* Vu meter mode with slowly falling peak indicator
+* ? Vu meter mode with slowly falling peak indicator
 * ? Control usage for background modes..??
 * Set DMX base channel from DIP switches
 * Support for 3 strips and RGBW
@@ -69,7 +68,7 @@ Dmx_ESP32 https://github.com/devarishi7/Dmx_ESP32
 245. Heat
 
 ## Modes
-### Background
+### 0 - Fade out
 0. Fade: Whatever is currently showing, fade it down through the palette. Control does nothing, smooth is fade time.
  ??? control should set target palette position, and it fades to that?
 1. Fizzle: Whatever is currently showing, fizzle it down through the palette. Control does nothing, smooth is fizzle time.
@@ -77,65 +76,67 @@ Dmx_ESP32 https://github.com/devarishi7/Dmx_ESP32
 2. Scroll: Scroll whatever is currently showing. Control does nothing, smooth is scroll pos.
 3. Blur: Blur whatever is currently showing with a slight fade. Control does nothing, smooth is blur rate.
 
-### Full strip / misc
+### 10 - Full strip / Background
 10. Solid: Blend entire strip through the palette based on control, smoothing applies a curved palette profile
 11. Gradient: control sets start palette position, smoothing sets end palette position, blend between the two
-12. Sine: Sine waves. Control is phase, smoothing is wavelength
-13. Noise: Perlin noise. Control is seed. Smoothing is scale
-14. Droplet: plot at random pos when control has a rising edge. Smooth is blur rate.
-15. Saw: Saw waves. Control is phase, smoothing is wavelength
-16. Tri: Triangle waves. Control is phase, smoothing is wavelength
+12. Droplet: plot at random pos when control has a rising edge. Smooth is blur rate.
 
-### Meter Gradient
-20. StartGradient: solid bar rises from start of strip, control is length of bar, smooth is lerp power in rest of strip
-21. EndGradient: solid bar falls from end of strip, control is length of bar, smooth is lerp power in rest of strip
-22. MidGradient: solid bar expands from centre of strip, control is length of bar, smooth is lerp power in rest of strip
-23. EndsGradient: solid bar expands from both ends of strup, control is length of bar, smooth is lerp power in rest of strip
+### 20 - Waveforms
+20. Noise: Perlin noise. Control is seed. Smoothing is scale
+21. Sine: Sine waves. Control is phase, smoothing is wavelength
+22. Saw: Saw waves. Control is phase, smoothing is wavelength
+23. Tri: Triangle waves. Control is phase, smoothing is wavelength
 
-### MeterFade
-30. StartFade: solid bar rises from start of strip, control is length of bar, smooth is fade time
-31. EndFade: solid bar falls from end of strip, control is length of bar, smooth is fade time
-32. MidFade: solid bar expands from centre of strip, control is length of bar, smooth is fade time
-33. EndsFade: solid bar expands from both ends of strip, control is length of bar, smooth is fade time
+### 50 - Meter Gradient
+50. StartGradient: solid bar rises from start of strip, control is length of bar, smooth is lerp power in rest of strip
+51. EndGradient: solid bar falls from end of strip, control is length of bar, smooth is lerp power in rest of strip
+52. MidGradient: solid bar expands from centre of strip, control is length of bar, smooth is lerp power in rest of strip
+53. EndsGradient: solid bar expands from both ends of strup, control is length of bar, smooth is lerp power in rest of strip
 
-### Meterfizzle
-40. Startfizzle: solid bar rises from start of strip, control is length of bar, smooth is fizzle time
-41. Endfizzle: solid bar falls from end of strip, control is length of bar, smooth is fizzle time
-42. Midfizzle: solid bar expands from centre of strip, control is length of bar, smooth is fizzle time
-43. Endsfizzle: solid bar expands from both ends of strip, control is length of bar, smooth is fizzle time
+### 60 - MeterFade
+60. StartFade: solid bar rises from start of strip, control is length of bar, smooth is fade time
+61. EndFade: solid bar falls from end of strip, control is length of bar, smooth is fade time
+62. MidFade: solid bar expands from centre of strip, control is length of bar, smooth is fade time
+63. EndsFade: solid bar expands from both ends of strip, control is length of bar, smooth is fade time
 
-### Plotting
-50. Plot: Control sets plot pos. Smoothing is palette pos to plot at the plot pos.
-51. PlotFade: Same as Plot, but drawn pixels slowly fade back to back colour. Smoothing is fade time
-52. PlotScrollFade: Control sets plot pos. Fore is drawn into the strip at plot pos. Smoothing is scroll pos. Fade time is fixed long.
-53. PlotFizzle: Same as Plot, but drawn pixels slowly fizzle back to back colour. Smoothing is fizzle time
+### 70 - Meterfizzle
+70. Startfizzle: solid bar rises from start of strip, control is length of bar, smooth is fizzle time
+71. Endfizzle: solid bar falls from end of strip, control is length of bar, smooth is fizzle time
+72. Midfizzle: solid bar expands from centre of strip, control is length of bar, smooth is fizzle time
+73. Endsfizzle: solid bar expands from both ends of strip, control is length of bar, smooth is fizzle time
 
-### Line drawing
-60. Line: Same as Plot, but plot all pixels between last pos and new pos
-61. LineFade: Same as PlotFade but subsequent plot positions are connected not separate
-62. LineScrollFade: Same as PlotScrollFade, but plot all pixels between last pos and new pos
-63. LineFizzle: Same as PlotFizzle but subsequent plot positions are connected not separate
+### 80 - MeterBlur
+80. StartBlur: pixel drawn at start of strip, control is palette entry of pixel, smooth is blur rate
+81. EndBlur: pixel drawn at end of strip, control is palette entry of pixel, smooth is blur rate
+82. MidBlur: pixel drawn at centre of strip, control is palette entry of pixel, smooth is blur rate
+83. EndsBlur: pixels drawn at both ends of strip, control is palette entry of pixel, smooth is blur rate
 
-### Ticker
-70. StartTicker: Control sets palette entry to draw at start of strip. Smoothing is scroll pos
-71. EndTicker: Control sets palette entry to draw at end of strip. Smoothing is scroll pos
-72. MidTicker: Control sets palette entry to draw at mid of strip. Smoothing is scroll pos, but moving out both ways
-73. EndsTicker: Control sets palette entry to draw at both ends of strip. Smoothing is scroll pos, but moving in both ways
+### 90 - MeterWave
+90. StartWave: pixel drawn at start of strip, control is palette entry of pixel, smooth is spring
+91. EndWave: pixel drawn at end of strip, control is palette entry of pixel, smooth is spring
+92. MidWave: pixel drawn at centre of strip, control is palette entry of pixel, smooth is spring
+93. EndsWave: pixels drawn at both ends of strip, control is palette entry of pixel, smooth is spring
 
-### TickerFade
-80. StartTickerFade: Control sets palette entry to draw at start of strip. Smoothing is scroll pos. A fixed slow fade is applied
-81. EndTickerFade: Control sets palette entry to draw at end of strip. Smoothing is scroll pos. A fixed slow fade is applied
-82. MidTickerFade: Control sets palette entry to draw at mid of strip. Smoothing is scroll pos, but moving out both ways. A fixed slow fade is applied
-83. EndsTickerFade: Control sets palette entry to draw at both ends of strip. Smoothing is scroll pos, but moving in both ways. A fixed slow fade is applied
+### 100 - Ticker
+100. StartTicker: Control sets palette entry to draw at start of strip. Smoothing is scroll pos
+101. EndTicker: Control sets palette entry to draw at end of strip. Smoothing is scroll pos
+102. MidTicker: Control sets palette entry to draw at mid of strip. Smoothing is scroll pos, but moving out both ways
+103. EndsTicker: Control sets palette entry to draw at both ends of strip. Smoothing is scroll pos, but moving in both ways
 
-### MeterBlur
-90. StartBlur: pixel drawn at start of strip, control is palette entry of pixel, smooth is blur rate
-91. EndBlur: pixel drawn at end of strip, control is palette entry of pixel, smooth is blur rate
-92. MidBlur: pixel drawn at centre of strip, control is palette entry of pixel, smooth is blur rate
-93. EndsBlur: pixels drawn at both ends of strip, control is palette entry of pixel, smooth is blur rate
+### 110 - TickerFade
+110. StartTickerFade: Control sets palette entry to draw at start of strip. Smoothing is scroll pos. A fixed slow fade is applied
+111. EndTickerFade: Control sets palette entry to draw at end of strip. Smoothing is scroll pos. A fixed slow fade is applied
+112. MidTickerFade: Control sets palette entry to draw at mid of strip. Smoothing is scroll pos, but moving out both ways. A fixed slow fade is applied
+113. EndsTickerFade: Control sets palette entry to draw at both ends of strip. Smoothing is scroll pos, but moving in both ways. A fixed slow fade is applied
 
-### MeterWave
-100. StartWave: pixel drawn at start of strip, control is palette entry of pixel, smooth is spring
-101. EndWave: pixel drawn at end of strip, control is palette entry of pixel, smooth is spring
-102. MidWave: pixel drawn at centre of strip, control is palette entry of pixel, smooth is spring
-103. EndsWave: pixels drawn at both ends of strip, control is palette entry of pixel, smooth is spring
+### 150 - Plot
+150. Plot: Control sets plot pos. Smoothing is palette pos to plot at the plot pos.
+151. PlotFade: Same as Plot, but drawn pixels slowly fade back to back colour. Smoothing is fade time
+152. PlotScrollFade: Control sets plot pos. Fore is drawn into the strip at plot pos. Smoothing is scroll pos. Fade time is fixed long.
+153. PlotFizzle: Same as Plot, but drawn pixels slowly fizzle back to back colour. Smoothing is fizzle time
+
+### 160 - Line
+160. Line: Same as Plot, but plot all pixels between last pos and new pos
+161. LineFade: Same as PlotFade but subsequent plot positions are connected not separate
+162. LineScrollFade: Same as PlotScrollFade, but plot all pixels between last pos and new pos
+163. LineFizzle: Same as PlotFizzle but subsequent plot positions are connected not separate
