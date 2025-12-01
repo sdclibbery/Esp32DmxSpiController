@@ -187,6 +187,15 @@ static void dropletMode(const Controls& data, PixelStrip& strip) {
   strip.lastDropletControl = data.control;
 }
 
+// 13. Xor: XOR bit patterns. control is pattern y, smooth is mod
+static void xorMode(const Controls& data, PixelStrip& strip) {
+  fadeAll(data, strip, 1.0f);
+  for (uint16_t i=0; i<strip.length; i++ ) {
+    uint16_t value = (i ^ (uint16_t)(data.smooth*255.0f)) % (uint16_t)(24.0f-data.control*21.0f);
+    if (value == 0) { strip.pixels[i] = 1.0f; }
+  }
+}
+
 // 20: Noise: Perlin noise. Control is seed. Smoothing is scale and octaves
 static void noiseMode(const Controls& data, PixelStrip& strip) {
   for (uint16_t i=0; i<strip.length; i++ ) {
@@ -531,6 +540,7 @@ void updateStrip(const Controls& data, PixelStrip& strip, unsigned long timeNow)
     case 10: solid(data, strip); break;
     case 11: gradientMode(data, strip); break;
     case 12: dropletMode(data, strip); break;
+    case 13: xorMode(data, strip); break;
     // Waveforms
     case 20: noiseMode(data, strip); break;
     case 21: sineMode(data, strip); break;

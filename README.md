@@ -3,6 +3,8 @@ ESP32 based DMX controller for SPI LED strips
 
 ## TODO
 ### SOFTWARE
+* XOR mode
+* on/off palette
 * !Zero velocity when change mode
 * LineBlur
 * ? Vu meter mode with slowly falling peak indicator
@@ -59,7 +61,7 @@ Dmx_ESP32 https://github.com/devarishi7/Dmx_ESP32
 ### Back/fore blends, but with wizzle
 120-128. Same as 0-8 but with wizzle (occasional random flick to white, irrespective of palette)
 
-### Preset modes not using DMX back/fore colours at all
+### Preset palettes not using DMX back/fore colours at all
 240. Rainbow
 241. Black body
 242. Oil
@@ -80,6 +82,7 @@ Dmx_ESP32 https://github.com/devarishi7/Dmx_ESP32
 10. Solid: Blend entire strip through the palette based on control, smoothing applies a curved palette profile
 11. Gradient: control sets start palette position, smoothing sets end palette position, blend between the two
 12. Droplet: plot at random pos when control has a rising edge. Smooth is blur rate.
+13. Xor: XOR bit patterns. control is mod control, smooth is pattern y axis
 
 ### 20 - Waveforms
 20. Noise: Perlin noise. Control is seed. Smoothing is scale
