@@ -189,7 +189,7 @@ static void dropletMode(const Controls& data, PixelStrip& strip) {
 
 // 13. Xor: XOR bit patterns. control is pattern y, smooth is mod
 static void xorMode(const Controls& data, PixelStrip& strip) {
-  fadeAll(data, strip, 1.0f);
+  fadeAll(data, strip, 0.2f);
   for (uint16_t i=0; i<strip.length; i++ ) {
     uint16_t mod = (uint16_t)(24.0f - data.control*19.0f);
     uint16_t value = (i ^ (uint16_t)(data.smooth*255.0f)) % mod;
