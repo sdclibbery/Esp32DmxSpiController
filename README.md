@@ -3,7 +3,6 @@ ESP32 based DMX controller for SPI LED strips
 
 ## TODO
 ### SOFTWARE
-* noblend palette
 * !Zero velocity when change mode
 * LineBlur
 * ? Vu meter mode with slowly falling peak indicator
@@ -52,6 +51,8 @@ Dmx_ESP32 https://github.com/devarishi7/Dmx_ESP32
 30-38. Same as 0-8 but with blended via scaled sum
 ### Back/fore blends, but blended via fore - back
 40-48. Same as 0-8 but with fore-back
+### Back/fore blends, but no blending (step blend)
+50-58. Same as 0-8 but with no blending
 
 ### Back/fore blends, but dithered
 100-108. Same as 0-8 but dithered instead of blended

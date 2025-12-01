@@ -24,6 +24,10 @@ static Rgb blendRgb (const Rgb& left, const Rgb& right, float lerp) {
     );
 }
 
+static Rgb step (const Rgb& left, const Rgb& right, float lerp) {
+    return (lerp < 0.5f) ? left : right;
+}
+
 static Rgb dither (const Rgb& left, const Rgb& right, float lerp) {
     float cmp = std::sin(lerp * 50.0f)*0.5f + 0.5f;
     if (lerp >= cmp) {
@@ -198,6 +202,16 @@ Rgb palette(uint8_t type, const Rgb& back, const Rgb& fore, float lerp, float dt
     case 46: return gamma(blend6(back, fore, back, fore, back, fore, lerp, &blendSub));
     case 47: return gamma(blend5(off, back, fore, back, fore, lerp, &blendSub));
     case 48: return gamma(blend7(off, back, fore, back, fore, back, fore, lerp, &blendSub));
+
+    case 50: return gamma(step(back, fore, lerp));
+    case 51: return gamma(blend3(off, back, fore, lerp, &step));
+    case 52: return gamma(blend3(back, fore, off, lerp, &step));
+    case 53: return gamma(blend3(back, off, fore, lerp, &step));
+    case 54: return gamma(blend3(off, fore, back, lerp, &step));
+    case 55: return gamma(blend4(back, fore, back, fore, lerp, &step));
+    case 56: return gamma(blend6(back, fore, back, fore, back, fore, lerp, &step));
+    case 57: return gamma(blend5(off, back, fore, back, fore, lerp, &step));
+    case 58: return gamma(blend7(off, back, fore, back, fore, back, fore, lerp, &step));
 
     case 100: return gamma(dither(back, fore, lerp));
     case 101: return gamma(blend3(off, back, fore, lerp, &dither));
