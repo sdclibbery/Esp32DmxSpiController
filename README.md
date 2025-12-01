@@ -3,8 +3,7 @@ ESP32 based DMX controller for SPI LED strips
 
 ## TODO
 ### SOFTWARE
-* XOR mode
-* on/off palette
+* noblend palette
 * !Zero velocity when change mode
 * LineBlur
 * ? Vu meter mode with slowly falling peak indicator

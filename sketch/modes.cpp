@@ -191,8 +191,10 @@ static void dropletMode(const Controls& data, PixelStrip& strip) {
 static void xorMode(const Controls& data, PixelStrip& strip) {
   fadeAll(data, strip, 1.0f);
   for (uint16_t i=0; i<strip.length; i++ ) {
-    uint16_t value = (i ^ (uint16_t)(data.smooth*255.0f)) % (uint16_t)(24.0f-data.control*21.0f);
+    uint16_t mod = (uint16_t)(24.0f - data.control*19.0f);
+    uint16_t value = (i ^ (uint16_t)(data.smooth*255.0f)) % mod;
     if (value == 0) { strip.pixels[i] = 1.0f; }
+    if (value == mod/2) { strip.pixels[i] = 0.5f; }
   }
 }
 
