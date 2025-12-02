@@ -532,6 +532,10 @@ void updateStrip(const Controls& data, PixelStrip& strip, unsigned long timeNow)
   strip.lastUpdateTime = timeNow;
   // Apply mode and calculate new pixel scalar values
   uint8_t mode = data.mode;
+  if (mode != strip.lastMode) {
+    strip.lastMode = mode;
+    for (uint16_t i=0; i<strip.length; i++ ) { strip.pixelVel[i] = 0.0f; } // Reset vel on mode change
+  }
   switch (mode) {
     // Background
     case 0: fadeMode(data, strip); break;

@@ -1,14 +1,14 @@
 # Esp32DmxSpiController
-ESP32 based DMX controller for SPI LED strips
+ESP32 based DMX controller for SPI LED strips. Tries to strike a balance between a sane number of channels (so not mapping each pixel to its own channels), and also allowing a good amount of programmability.
 
 ## TODO
 ### SOFTWARE
-* !Zero velocity when change mode
-* LineBlur
+* Switch to RGBW
+* Set DMX base channel from DIP switches
+* 3 strips
+* ? 2 'global' values to apply to all 3 strips (to make up to 32 channels); Global dimmer and...?? Global strobe??
 * ? Vu meter mode with slowly falling peak indicator
 * ? Control usage for background modes..??
-* Set DMX base channel from DIP switches
-* Support for 3 strips and RGBW
 ### HARDWARE
 * Project case
 * DMX passhrough connectors

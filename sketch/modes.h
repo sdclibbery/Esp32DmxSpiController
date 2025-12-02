@@ -19,6 +19,7 @@ struct PixelStrip {
   float* pixelVel;
   unsigned long lastUpdateTime;
   float dt;
+  uint8_t lastMode;
   float lastScrollPos;
   float lastDrawPos;
   float lastDropletControl;
@@ -31,6 +32,7 @@ struct PixelStrip {
     setPixel = _setPixel;
     lastUpdateTime = 0;
     dt = 0.0f;
+    lastMode = 0;
     lastScrollPos = 0.0f;
     lastDrawPos = 0.0f;
     lastDropletControl = 0.0f;
