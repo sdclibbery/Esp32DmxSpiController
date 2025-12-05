@@ -12,6 +12,12 @@
 #define LED_DMX       13 // Onboard red led
 dmxRx dmxReceive = dmxRx(&Serial1, DMX_RX_PIN, DMX_RX_PIN, DMX_EN_PIN, LED_DMX, LOW);  // The LED is on the board to show when DMX is being received
 
+// DIP pins
+#define DIP_PIN_32    25
+#define DIP_PIN_64    26
+#define DIP_PIN_128   33
+#define DIP_PIN_256   32
+
 // LED setup
 #define LED_CLOCK 5
 #define LED_DATA0 27 // Top most output
@@ -20,9 +26,11 @@ dmxRx dmxReceive = dmxRx(&Serial1, DMX_RX_PIN, DMX_RX_PIN, DMX_EN_PIN, LED_DMX, 
 typedef NeoPixelBus<NeoGrbFeature, NeoEsp32I2s1X8Ws2812xMethod> NeoPixelStrip;
 // typedef NeoPixelBus<NeoGrbwFeature, NeoEsp32I2s1X8Sk6812Method> NeoPixelStrip;
 
+// DMX
+uint16_t dmxStartChannel = 1;
+
 // Strips
 const uint16_t pixelCount1 = 30;
-const uint16_t dmxStartChannel1 = 1;
 NeoPixelStrip neoStrip1(pixelCount1, LED_DATA0);
 void setPixel1 (uint16_t index, Rgb color) { neoStrip1.SetPixelColor(index, RgbColor(color.red*255, color.green*255, color.blue*255)); }
 PixelStrip pixelStrip1(pixelCount1, setPixel1);
@@ -62,6 +70,15 @@ void setup() {
   Serial.printf("ESP32 Chip Revision: %d\n", ESP.getChipRevision());
   Serial.printf("ESP32 Arduino core version: %s\n", ESP_ARDUINO_VERSION_STR);
 
+  pinMode(DIP_PIN_32, INPUT_PULLUP);
+  pinMode(DIP_PIN_64, INPUT_PULLUP);
+  pinMode(DIP_PIN_128, INPUT_PULLUP);
+  pinMode(DIP_PIN_256, INPUT_PULLUP);
+
+  dmxStartChannel = 1 + 32*(digitalRead(DIP_PIN_32)==LOW) + 64*(digitalRead(DIP_PIN_64)==LOW)
+                      + 128*(digitalRead(DIP_PIN_128)==LOW) + 256*(digitalRead(DIP_PIN_256)==LOW);
+  Serial.printf("DIP switch dmxStartChannel: %d\n", dmxStartChannel);
+
   if (!dmxReceive.configure()) { Serial.println("DMX Configure failed."); }
   else { Serial.println("DMX Configured."); }
   delay(10);
@@ -77,7 +94,7 @@ void loop() {
   if (Serial.available()) { parseSerial(controls1, Serial.readString()); }
 
   if (dmxReceive.hasUpdated()) {  // only read new values
-    parseDmx(controls1, dmxStartChannel1);
+    parseDmx(controls1, dmxStartChannel + 0);
     // Serial.printf("DMX frame. Mode: %d Palette: %d Control: %.2f Smooth: %.2f\n", controls1.mode, controls1.palette, controls1.control, controls1.smooth);
   }
 

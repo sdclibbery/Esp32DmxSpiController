@@ -3,9 +3,13 @@ ESP32 based DMX controller for SPI LED strips. Tries to strike a balance between
 
 ## TODO
 ### SOFTWARE
-* Switch to RGBW
-* Set DMX base channel from DIP switches
+* Switch to SK6812 GRBW
+   Strip definition
+   Strip pixel setter function
+* Use white channels by subbing from RGB channels
+   check balance between RGB white and W white
 * 3 strips
+* ? New default palette colours? Also default to OBF?
 * ? 2 'global' values to apply to all 3 strips (to make up to 32 channels); Global dimmer and...?? Global strobe??
 * ? Vu meter mode with slowly falling peak indicator
 * ? Control usage for background modes..??
@@ -15,7 +19,7 @@ ESP32 based DMX controller for SPI LED strips. Tries to strike a balance between
 * DMX channel DIP switches - 4 switches to select bank of 32 channels
 * Large PSU
 * 5 strip connectors
-* 5 SK6812 strips ?? Or just stick with ws2812b??
+* 5 SK6812 strips
 * Stands/mounting for strips
 * Leads for strips
 * USB port on case?
