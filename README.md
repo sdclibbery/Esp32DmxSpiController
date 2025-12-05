@@ -3,9 +3,6 @@ ESP32 based DMX controller for SPI LED strips. Tries to strike a balance between
 
 ## TODO
 ### SOFTWARE
-* Switch to SK6812 GRBW
-   Strip definition
-   Strip pixel setter function
 * Use white channels by subbing from RGB channels
    check balance between RGB white and W white
 * 3 strips

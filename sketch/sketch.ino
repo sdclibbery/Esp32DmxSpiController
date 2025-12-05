@@ -23,8 +23,8 @@ dmxRx dmxReceive = dmxRx(&Serial1, DMX_RX_PIN, DMX_RX_PIN, DMX_EN_PIN, LED_DMX, 
 #define LED_DATA0 27 // Top most output
 #define LED_DATA1 18
 #define LED_DATA2 19
-typedef NeoPixelBus<NeoGrbFeature, NeoEsp32I2s1X8Ws2812xMethod> NeoPixelStrip;
-// typedef NeoPixelBus<NeoGrbwFeature, NeoEsp32I2s1X8Sk6812Method> NeoPixelStrip;
+// typedef NeoPixelBus<NeoGrbFeature, NeoEsp32I2s1X8Ws2812xMethod> NeoPixelStrip;
+typedef NeoPixelBus<NeoGrbwFeature, NeoEsp32I2s1X8Sk6812Method> NeoPixelStrip;
 
 // DMX
 uint16_t dmxStartChannel = 1;
@@ -32,7 +32,7 @@ uint16_t dmxStartChannel = 1;
 // Strips
 const uint16_t pixelCount1 = 30;
 NeoPixelStrip neoStrip1(pixelCount1, LED_DATA0);
-void setPixel1 (uint16_t index, Rgb color) { neoStrip1.SetPixelColor(index, RgbColor(color.red*255, color.green*255, color.blue*255)); }
+void setPixel1 (uint16_t index, Rgb color) { neoStrip1.SetPixelColor(index, RgbwColor(color.red*255, color.green*255, color.blue*255, 0)); }
 PixelStrip pixelStrip1(pixelCount1, setPixel1);
 Controls controls1(Rgb(0,0,0.1f),Rgb(0.2f,0,0));
 
