@@ -29,6 +29,7 @@ typedef NeoPixelBus<NeoGrbwFeature, NeoEsp32I2s1X8Sk6812Method> NeoPixelStrip;
 // DMX
 uint16_t dmxStartChannel = 1;
 
+static RgbColor toRgb (Rgb color) { return RgbColor(color.red*255, color.green*255, color.blue*255); }
 static RgbwColor toRgbw (Rgb color) {
   uint8_t red = color.red*255;
   uint8_t green = color.green*255;
@@ -39,7 +40,7 @@ static RgbwColor toRgbw (Rgb color) {
 }
 
 // Strips
-const uint16_t pixelCount1 = 30;
+const uint16_t pixelCount1 = 60;
 NeoPixelStrip neoStrip1(pixelCount1, LED_DATA0);
 static void setPixel1 (uint16_t index, Rgb color) { neoStrip1.SetPixelColor(index, toRgbw(color)); }
 PixelStrip pixelStrip1(pixelCount1, setPixel1);
