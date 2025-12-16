@@ -44,7 +44,19 @@ const uint16_t pixelCount1 = 60;
 NeoPixelStrip neoStrip1(pixelCount1, LED_DATA0);
 static void setPixel1 (uint16_t index, Rgb color) { neoStrip1.SetPixelColor(index, toRgbw(color)); }
 PixelStrip pixelStrip1(pixelCount1, setPixel1);
-Controls controls1(Rgb(0,0,0.1f),Rgb(0.2f,0,0));
+Controls controls1(Rgb(0.1f,0,0),Rgb(0.2f,0,0));
+
+const uint16_t pixelCount2 = 60;
+NeoPixelStrip neoStrip2(pixelCount2, LED_DATA1);
+static void setPixel2 (uint16_t index, Rgb color) { neoStrip2.SetPixelColor(index, toRgbw(color)); }
+PixelStrip pixelStrip2(pixelCount2, setPixel2);
+Controls controls2(Rgb(0,0.1f,0),Rgb(0,0.2f,0));
+
+const uint16_t pixelCount3 = 60;
+NeoPixelStrip neoStrip3(pixelCount3, LED_DATA2);
+static void setPixel3 (uint16_t index, Rgb color) { neoStrip3.SetPixelColor(index, toRgbw(color)); }
+PixelStrip pixelStrip3(pixelCount3, setPixel3);
+Controls controls3(Rgb(0,0,0.1f),Rgb(0,0,0.2f));
 
 static void parseSerial (Controls& controls, String data) { // For testing
   Serial.println(data);
@@ -96,6 +108,8 @@ void setup() {
   else { Serial.println("DMX aborted"); }
 
   neoStrip1.Begin(); neoStrip1.Show(); // Clear strip
+  neoStrip2.Begin(); neoStrip2.Show(); // Clear strip
+  neoStrip3.Begin(); neoStrip3.Show(); // Clear strip
 
   Serial.println("Setup complete.");
 }
@@ -105,10 +119,17 @@ void loop() {
 
   if (dmxReceive.hasUpdated()) {  // only read new values
     parseDmx(controls1, dmxStartChannel + 0);
+    parseDmx(controls2, dmxStartChannel + 10);
+    parseDmx(controls3, dmxStartChannel + 20);
     // Serial.printf("DMX frame. Mode: %d Palette: %d Control: %.2f Smooth: %.2f\n", controls1.mode, controls1.palette, controls1.control, controls1.smooth);
   }
 
-  updateStrip(controls1, pixelStrip1, micros());
+  unsigned long us = micros();
+  updateStrip(controls1, pixelStrip1, us);
+  updateStrip(controls2, pixelStrip2, us);
+  updateStrip(controls3, pixelStrip3, us);
   neoStrip1.Show();
+  neoStrip2.Show();
+  neoStrip3.Show();
   delay(10);
 }

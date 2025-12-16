@@ -3,13 +3,9 @@ ESP32 based DMX controller for SPI LED strips. Tries to strike a balance between
 
 ## TODO
 ### SOFTWARE
-* Use white channels by subbing from RGB channels
-   !!check balance between RGB white and W white
-* 3 strips
-* ? New default palette colours? Also default to OBF?
 * ? 2 'global' values to apply to all 3 strips (to make up to 32 channels); Global dimmer and...?? Global strobe??
-* ? Vu meter mode with slowly falling peak indicator
 * ? Control usage for background modes..??
+* ? Vu meter mode with slowly falling peak indicator
 ### HARDWARE
 * Project case
 * DMX passhrough connectors
