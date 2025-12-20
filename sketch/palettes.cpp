@@ -28,6 +28,14 @@ static Rgb step (const Rgb& left, const Rgb& right, float lerp) {
     return (lerp < 0.5f) ? left : right;
 }
 
+static Rgb channelBlend (const Rgb& left, const Rgb& right, float lerp) {
+    return Rgb(
+      left.red + (right.red - left.red) * std::pow(lerp, 1.0f),
+      left.green + (right.green - left.green) * std::pow(lerp, 3.0f),
+      left.blue + (right.blue - left.blue) * std::pow(lerp, 0.33f)
+    );
+}
+
 static Rgb dither (const Rgb& left, const Rgb& right, float lerp) {
     float cmp = std::sin(lerp * 50.0f)*0.5f + 0.5f;
     if (lerp >= cmp) {
@@ -207,6 +215,16 @@ Rgb palette(uint8_t type, const Rgb& back, const Rgb& fore, float lerp, float dt
     case 56: return blend6(back, fore, back, fore, back, fore, lerp, &step);
     case 57: return blend5(off, back, fore, back, fore, lerp, &step);
     case 58: return blend7(off, back, fore, back, fore, back, fore, lerp, &step);
+
+    case 60: return channelBlend(back, fore, lerp);
+    case 61: return blend3(off, back, fore, lerp, &channelBlend);
+    case 62: return blend3(back, fore, off, lerp, &channelBlend);
+    case 63: return blend3(back, off, fore, lerp, &channelBlend);
+    case 64: return blend3(off, fore, back, lerp, &channelBlend);
+    case 65: return blend4(back, fore, back, fore, lerp, &channelBlend);
+    case 66: return blend6(back, fore, back, fore, back, fore, lerp, &channelBlend);
+    case 67: return blend5(off, back, fore, back, fore, lerp, &channelBlend);
+    case 68: return blend7(off, back, fore, back, fore, back, fore, lerp, &channelBlend);
 
     case 100: return dither(back, fore, lerp);
     case 101: return blend3(off, back, fore, lerp, &dither);

@@ -3,7 +3,6 @@ ESP32 based DMX controller for SPI LED strips. Tries to strike a balance between
 
 ## TODO
 ### SOFTWARE
-* Palette type that applies a power curve to each channel separately, r:1, g:2, b:1/2
 * Global dimmer and global gamma on channels 31 and 32
  TEST!!!
 * noise shows a big block of background at the far end of the strip when smooth is 1 (eg oil purple)
@@ -51,6 +50,8 @@ Dmx_ESP32 https://github.com/devarishi7/Dmx_ESP32
 40-48. Same as 0-8 but with fore-back
 ### Back/fore blends, but no blending (step blend)
 50-58. Same as 0-8 but with no blending
+### Back/fore blends, but power curves applied to each channel individually
+60-68. Same as 0-8 but with per channel power curve
 
 ### Back/fore blends, but dithered
 100-108. Same as 0-8 but dithered instead of blended
