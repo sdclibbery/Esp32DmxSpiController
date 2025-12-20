@@ -3,6 +3,7 @@ ESP32 based DMX controller for SPI LED strips. Tries to strike a balance between
 
 ## TODO
 ### SOFTWARE
+* Palette type that applies a power curve to each channel separately, r:1, g:2, b:1/2
 * Global dimmer and global gamma on channels 31 and 32
  TEST!!!
 * noise shows a big block of background at the far end of the strip when smooth is 1 (eg oil purple)

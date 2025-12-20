@@ -211,7 +211,7 @@ static void noiseMode(const Controls& data, PixelStrip& strip) {
 static void sineMode(const Controls& data, PixelStrip& strip) {
   for (uint16_t i=0; i<strip.length; i++ ) {
     float pos = (float)i / (float)(strip.length-1);
-    float value = (std::sin((pos - data.control) * (1.0f + data.smooth*8.0f) * 2.0f * 3.14159265f) + 1.0f) / 2.0f;
+    float value = (std::sin((pos - data.control) * (0.5f + data.smooth*8.0f) * 2.0f * 3.14159265f) + 1.0f) / 2.0f;
     strip.pixels[i] = value;
   }
 }
@@ -221,7 +221,7 @@ static void sawMode(const Controls& data, PixelStrip& strip) {
   for (uint16_t i=0; i<strip.length; i++ ) {
     float pos = (float)i / (float)(strip.length-1);
     float freq = 1.0f + data.smooth*8.0f;
-    float value = fmod(pos*freq - data.control + 1.0f, 1.0f);
+    float value = fmod(pos*freq - data.control + 0.5f, 1.0f);
     strip.pixels[i] = limit(value);
   }
 }
@@ -231,7 +231,7 @@ static void triMode(const Controls& data, PixelStrip& strip) {
   for (uint16_t i=0; i<strip.length; i++ ) {
     float pos = (float)i / (float)(strip.length-1);
     float freq = 1.0f + data.smooth*8.0f;
-    float value = fmod(pos*freq - data.control + 1.0f, 1.0f);
+    float value = fmod(pos*freq - data.control + 0.5f, 1.0f);
     value = (value < 0.5f) ? (value * 2.0f) : (1.0f - (value - 0.5f) * 2.0f);
     strip.pixels[i] = limit(value);
   }
