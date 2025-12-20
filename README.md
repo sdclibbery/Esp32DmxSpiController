@@ -3,31 +3,31 @@ ESP32 based DMX controller for SPI LED strips. Tries to strike a balance between
 
 ## TODO
 ### SOFTWARE
-* ? 2 'global' values to apply to all 3 strips (to make up to 32 channels); Global dimmer and...?? Global strobe??
+* Global dimmer and global gamma on channels 31 and 32
+ TEST!!!
+* noise shows a big block of background at the far end of the strip when smooth is 1 (eg oil purple)
+ TEST!!
+* blackbody palette goes to black which looks wrong (or is it just gamma is wrong?)
+ TRY GAMMA; change default if needed
+* TEST white balance with an alternating pixel hack
 * ? Control usage for background modes..??
 * ? Vu meter mode with slowly falling peak indicator
-### HARDWARE
-* Project case
-* DMX passhrough connectors
-* DMX channel DIP switches - 4 switches to select bank of 32 channels
-* Large PSU
-* 5 strip connectors
-* 5 SK6812 strips
-* Stands/mounting for strips
-* Leads for strips
-* USB port on case?
 
 ## Libraries used
 NeoPixelBus
 Dmx_ESP32 https://github.com/devarishi7/Dmx_ESP32
 
 ## DMX Channel Mapping
+### Each strip (x3)
 1. Mode
 2. Palette
 3. Control
 4. Smoothing
 5-7. Back RGB
 8-10. Fore RGB
+### Global
+31. Global dimmer. 0 defaults to full brightness for convenience
+32. Global gamma. maps from 1/4 to 4, except 0 defaults to gamma of 2 for convenience
 
 ## Palettes
 ### Using DMX specified back/fore colours, with extra black option, blended in RGB space

@@ -27,13 +27,25 @@ dmxRx dmxReceive = dmxRx(&Serial1, DMX_RX_PIN, DMX_RX_PIN, DMX_EN_PIN, LED_DMX, 
 typedef NeoPixelBus<NeoGrbwFeature, NeoEsp32I2s1X8Sk6812Method> NeoPixelStrip;
 
 // DMX
-uint16_t dmxStartChannel = 1;
+uint16_t dmxStartChannel = 1; // Default to 1 but gets set from DIP switches
 
-static RgbColor toRgb (Rgb color) { return RgbColor(color.red*255, color.green*255, color.blue*255); }
+// Output color conversion
+static float dmxDimmer = 0.0f;
+static float dmxGamma = 0.0f;
+static float applyGamma (float v) {
+  float gammaValue = dmxGamma == 0.0f ? 2.2f : 0.25f+dmxGamma*3.75f; // For convenience, the default dmx value of 0 is standard gamma of 2.2. Otherwise you have to always set the global gamma channel to get useful output
+  return std::pow(v, gammaValue);
+}
+static uint8_t channel (float v) {
+  float dimmer = dmxDimmer == 0.0f ? 1.0f : dmxDimmer; // For convenience, the default dmx value of 0 is full-on. Otherwise you have to always set the global dimmer channel to do anything
+  return applyGamma(v)*dimmer*255;
+}
+
+static RgbColor toRgb (Rgb color) { return RgbColor(applyGamma(color.red)*255, applyGamma(color.green)*255, applyGamma(color.blue)*255); }
 static RgbwColor toRgbw (Rgb color) {
-  uint8_t red = color.red*255;
-  uint8_t green = color.green*255;
-  uint8_t blue = color.blue*255;
+  uint8_t red = applyGamma(color.red)*255;
+  uint8_t green = applyGamma(color.green)*255;
+  uint8_t blue = applyGamma(color.blue)*255;
   uint8_t white = std::min(std::min(red, green), blue);
   red -= white; green -= white; blue -= white;
   return RgbwColor(red, green, blue, white);
@@ -122,6 +134,8 @@ void loop() {
     parseDmx(controls2, dmxStartChannel + 10);
     parseDmx(controls3, dmxStartChannel + 20);
     // Serial.printf("DMX frame. Mode: %d Palette: %d Control: %.2f Smooth: %.2f\n", controls1.mode, controls1.palette, controls1.control, controls1.smooth);
+    dmxDimmer = ((float)dmxReceive.read(dmxStartChannel + 30))/255;
+    dmxGamma = ((float)dmxReceive.read(dmxStartChannel + 31))/255;
   }
 
   unsigned long us = micros();
