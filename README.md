@@ -3,12 +3,6 @@ ESP32 based DMX controller for SPI LED strips. Tries to strike a balance between
 
 ## TODO
 ### SOFTWARE
-* Global dimmer and global gamma on channels 31 and 32
- TEST!!!
-* noise shows a big block of background at the far end of the strip when smooth is 1 (eg oil purple)
- TEST!!
-* blackbody palette goes to black which looks wrong (or is it just gamma is wrong?)
- TRY GAMMA; change default if needed
 * TEST white balance with an alternating pixel hack
 * ? Control usage for background modes..??
 * ? Vu meter mode with slowly falling peak indicator

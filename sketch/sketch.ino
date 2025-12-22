@@ -33,7 +33,7 @@ uint16_t dmxStartChannel = 1; // Default to 1 but gets set from DIP switches
 static float dmxDimmer = 0.0f;
 static float dmxGamma = 0.0f;
 static float applyGamma (float v) {
-  float gammaValue = dmxGamma == 0.0f ? 2.2f : 0.25f+dmxGamma*3.75f; // For convenience, the default dmx value of 0 is standard gamma of 2.2. Otherwise you have to always set the global gamma channel to get useful output
+  float gammaValue = dmxGamma == 0.0f ? 1.25f : 0.25f+dmxGamma*3.75f; // For convenience, the default dmx value of 0 is gamma of 1.25. Otherwise you have to always set the global gamma channel to get useful output
   return std::pow(v, gammaValue);
 }
 static uint8_t channel (float v) {
@@ -41,32 +41,33 @@ static uint8_t channel (float v) {
   return applyGamma(v)*dimmer*255;
 }
 
-static RgbColor toRgb (Rgb color) { return RgbColor(applyGamma(color.red)*255, applyGamma(color.green)*255, applyGamma(color.blue)*255); }
-static RgbwColor toRgbw (Rgb color) {
-  uint8_t red = applyGamma(color.red)*255;
-  uint8_t green = applyGamma(color.green)*255;
-  uint8_t blue = applyGamma(color.blue)*255;
+static RgbColor toRgb (Rgb color, uint16_t index) { return RgbColor(channel(color.red), channel(color.green), channel(color.blue)); }
+static RgbwColor toRgbw (Rgb color, uint16_t index ) {
+  uint8_t red = channel(color.red);
+  uint8_t green = channel(color.green);
+  uint8_t blue = channel(color.blue);
+  // if (index%2 == 0) { return RgbwColor(255,255,255, 0); } // For testing RGB vs W balance
   uint8_t white = std::min(std::min(red, green), blue);
-  red -= white; green -= white; blue -= white;
+  red -= white; green -= white; blue -= white/4; // Account for W LED being yellowy compareed to RGB
   return RgbwColor(red, green, blue, white);
 }
 
 // Strips
 const uint16_t pixelCount1 = 60;
 NeoPixelStrip neoStrip1(pixelCount1, LED_DATA0);
-static void setPixel1 (uint16_t index, Rgb color) { neoStrip1.SetPixelColor(index, toRgbw(color)); }
+static void setPixel1 (uint16_t index, Rgb color) { neoStrip1.SetPixelColor(index, toRgbw(color, index)); }
 PixelStrip pixelStrip1(pixelCount1, setPixel1);
 Controls controls1(Rgb(0.1f,0,0),Rgb(0.2f,0,0));
 
 const uint16_t pixelCount2 = 60;
 NeoPixelStrip neoStrip2(pixelCount2, LED_DATA1);
-static void setPixel2 (uint16_t index, Rgb color) { neoStrip2.SetPixelColor(index, toRgbw(color)); }
+static void setPixel2 (uint16_t index, Rgb color) { neoStrip2.SetPixelColor(index, toRgbw(color, index)); }
 PixelStrip pixelStrip2(pixelCount2, setPixel2);
 Controls controls2(Rgb(0,0.1f,0),Rgb(0,0.2f,0));
 
 const uint16_t pixelCount3 = 60;
 NeoPixelStrip neoStrip3(pixelCount3, LED_DATA2);
-static void setPixel3 (uint16_t index, Rgb color) { neoStrip3.SetPixelColor(index, toRgbw(color)); }
+static void setPixel3 (uint16_t index, Rgb color) { neoStrip3.SetPixelColor(index, toRgbw(color, index)); }
 PixelStrip pixelStrip3(pixelCount3, setPixel3);
 Controls controls3(Rgb(0,0,0.1f),Rgb(0,0,0.2f));
 
